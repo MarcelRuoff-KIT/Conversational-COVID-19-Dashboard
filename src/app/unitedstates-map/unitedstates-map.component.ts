@@ -6,7 +6,8 @@ import {
   Input,
   SimpleChanges,
   OnChanges,
-  ChangeDetectorRef,  ViewChild,
+  ChangeDetectorRef,
+  ViewChild,
   EventEmitter,
   Output
 } from "@angular/core";
@@ -21,6 +22,7 @@ import {
 
 import * as statesdata from "../data/states.json";
 import * as coviddata from "../data/states-historical.json";
+import coviddataV2 from "../data/timeseries covid states.json";
 import * as d3 from "d3";
 
 import {
@@ -66,12 +68,13 @@ export class UnitedStatesMapComponent implements OnInit {
 
   projection;
   path;
+  that;
 
   width = 960;
   height = 500;
 
 
-  public scaleButtons = ["Sqrrt", "Linear", "Exponential", "Logarithmic"];
+  public scaleButtons = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
 
   public typeButtons = [{
     text: "Filled",
@@ -122,8 +125,9 @@ export class UnitedStatesMapComponent implements OnInit {
 
   numBars = 6;
   start = 1;
-  end;
+  end = 1300000;
 
+  statesSelect = [];
   scale = "Sqrrt";
   type = "Filled";
   metric = "Total Cases";
@@ -185,9 +189,11 @@ export class UnitedStatesMapComponent implements OnInit {
             button.selected = true;
           }
 
+          
           if (this.route.snapshot.params['selectedScale']) {
             this.scale = this.route.snapshot.params['selectedScale'];
           }
+          
 
           if (this.route.snapshot.params['selectedTab']) {
             this.tab = this.route.snapshot.params['selectedTab'];
@@ -227,7 +233,7 @@ export class UnitedStatesMapComponent implements OnInit {
  
   }
 
-  private removeExistingMapFromParent() {
+  public removeExistingMapFromParent() {
     // !!!!Caution!!!
     // Make sure not to do;
     //     d3.select('svg').remove();
@@ -264,92 +270,98 @@ export class UnitedStatesMapComponent implements OnInit {
       .attr("height", this.height + 75)
       .on("click", this.stopped, true);
 
-    var that = this;
+    this.that = this;
 
-    that.svg
+    this.that.svg
       .append("rect")
       .attr("class", "background")
       .attr("width", this.width)
       .attr("height", this.height)
       .on("click", function (d) {
-        that.reset(d, that);
+        this.that.reset(d, this.that);
       });
 
     this.svg.call(this.zoom); // delete this line to disable free zooming
 
-    that.g = this.svg.append("g");
+    this.that.g = this.svg.append("g");
 
-    that.covid = coviddata.states;
+    this.that.covid = coviddataV2.states;
 
-    that.dateMax = d3.max(that.covid, function (d: any) {
-      return d.date
-    });
+    this.that.dateMax = "2020-12-02"
+
 
     // Slider values
-    that.min = new Date(that.dateMin).getTime();
-    var max = new Date(that.dateMax);
+    this.that.min = new Date(this.that.dateMin).getTime();
+    var max = new Date(this.that.dateMax);
     max.setHours(23, 59, 59, 999);
-    that.max = max.getTime();
+    this.that.max = max.getTime();
 
     // default to end date
-    if (!that.date) {
-      that.date = that.dateMax;
-      that.slider.value = that.value;
+    if (!this.that.date) {
+      this.that.date = this.that.dateMax;
+      this.that.slider.value = this.that.value;
     }
 
     // Set date to max date if no data available
-    if (that.date > that.dateMax) {
-      that.date = that.dateMax;
-      that.value = that.max;
+    if (this.that.date > this.that.dateMax) {
+      this.that.date = this.that.dateMax;
+      this.that.value = this.that.max;
       this.location.go('unitedstates/' + this.type + '/' + this.scale + '/' + this.metric + "/" + this.date + "/" + this.tab);
     }
- 
-    var covidMax = that.covid.filter(function (d) {
-      return d.date === that.dateMax
+    
+    var dateMax = this.that.dateMax
+
+    var covidMax = this.that.covid.filter(function (d) {
+      return d.date === dateMax
     });
 
-    that.start = 1;
+    this.that.start = 1;
 
     // Get data for all dates for daily
 
-    switch (that.metric) {
+    /*
+    switch (this.that.metric) {
       case "Daily Deaths":
-        that.end = d3.max(that.covid, function (d: any) {
+        this.that.end = d3.max(this.that.covid, function (d: any) {
           return d.daily_deaths;
         })
         break;
       case "Daily Cases":
-        that.end = d3.max(that.covid, function (d: any) {
+        this.that.end = d3.max(this.that.covid, function (d: any) {
           return d.daily_cases;
         })
         break;
       case "Total Cases":
-        that.end = d3.max(covidMax, function (d: any) {
+        this.that.end = d3.max(covidMax, function (d: any) {
           return d.cases;
         })
         break;
       case "Total Deaths":
-        that.end = d3.max(covidMax, function (d: any) {
+        this.that.end = d3.max(covidMax, function (d: any) {
           return d.deaths;
         })
         break;
     }
+    */
 
 
 
     // Get current date
-    that.covid = that.covid.filter(function (d) {
-      return d.date === that.date
+    var date = this.that.date
+    /*this.that.covid = this.that.covid.filter(function (d) {
+      return d.date === date
     });
+    */
 
-    that.states = statesdata.features;
+    this.that.states = statesdata.features;
 
-    that.merged = that.join(that.covid, that.states, "state", "name", function (
+    var currentMetric = this.that.metric;
+    this.that.merged = this.that.join(this.that.covid, this.that.states, "State", "name", function (
       state,
       covid
     ) {
       var metric;
-      switch (that.metric) {
+      switch (currentMetric) {
         case "Daily Cases":
           metric = covid ? covid.daily_cases : 0;
           break;
@@ -357,7 +369,7 @@ export class UnitedStatesMapComponent implements OnInit {
           metric = covid ? covid.daily_deaths : 0;
           break;
         case "Total Cases":
-          metric = covid ? covid.cases : 0;
+          metric = covid ? covid[date] : 0;
           break;
         case "Total Deaths":
           metric = covid ? covid.deaths : 0;
@@ -375,115 +387,116 @@ export class UnitedStatesMapComponent implements OnInit {
 
 
     // Sort for bubble overlays
-    that.merged = that.merged.sort((a, b) => a.metric > b.metric ? - 1 : (a.metric < b.metric ? 1 : 0));
+    this.that.merged = this.that.merged.sort((a, b) => a.metric > b.metric ? - 1 : (a.metric < b.metric ? 1 : 0));
 
     // Linear Scale
-    switch (that.type) {
+    switch (this.that.type) {
       case "Filled":
-        that.linearScale = d3.scaleLinear()
-          .domain([that.start, that.end])
+        this.that.linearScale = d3.scaleLinear()
+          .domain([this.that.start, this.that.end])
           .range([0, 1]);
         break;
       case "Bubble":
-        that.linearScale = d3.scaleLinear()
-          .domain([that.start, that.end])
+        this.that.linearScale = d3.scaleLinear()
+          .domain([this.that.start, this.that.end])
           .range([0, 30]);
         break;
     }
 
-    that.colorScaleLinear = d3.scaleSequential(d =>
-      d3.interpolateReds(that.linearScale(d))
+    this.that.colorScaleLinear = d3.scaleSequential(d =>
+      d3.interpolateReds(this.that.linearScale(d))
     );
 
     // Exponential Scale
-    switch (that.type) {
+    switch (this.that.type) {
       case "Filled":
-        that.expScale = d3
+        this.that.expScale = d3
           .scalePow()
           .exponent(Math.E)
-          .domain([that.start, that.end])
+          .domain([this.that.start, this.that.end])
           .range([0, 1]);
 
         break;
       case "Bubble":
-        that.expScale = d3
+        this.that.expScale = d3
           .scalePow()
           .exponent(Math.E)
-          .domain([that.start, that.end])
+          .domain([this.that.start, this.that.end])
           .range([0, 30]);
         break;
     }
 
-    that.colorScaleExp = d3.scaleSequential(d =>
-      d3.interpolateReds(that.expScale(d))
+    this.that.colorScaleExp = d3.scaleSequential(d =>
+      d3.interpolateReds(this.that.expScale(d))
     );
 
     // Log Scale
-    switch (that.type) {
+    switch (this.that.type) {
       case "Filled":
-        that.logScale = d3.scaleLog().domain([that.start, that.end])
+        this.that.logScale = d3.scaleLog().domain([this.that.start, this.that.end])
           .range([0, 1]);
         break;
       case "Bubble":
-        that.logScale = d3.scaleLog().domain([that.start, that.end])
+        this.that.logScale = d3.scaleLog().domain([this.that.start, this.that.end])
           .range([0, 30]);
         break;
     }
 
-    that.colorScaleLog = d3.scaleSequential(d =>
-      d3.interpolateReds(that.logScale(d))
+    this.that.colorScaleLog = d3.scaleSequential(d =>
+      d3.interpolateReds(this.that.logScale(d))
     );
 
     // Sqrt Scale
-    switch (that.type) {
+    switch (this.that.type) {
       case "Filled":
-        that.sqrtScale = d3.scaleSqrt().domain([that.start, that.end])
+        this.that.sqrtScale = d3.scaleSqrt().domain([this.that.start, this.that.end])
           .range([.1, 1]);
         break;
       case "Bubble":
-        that.sqrtScale = d3.scaleSqrt().domain([that.start, that.end])
+        this.that.sqrtScale = d3.scaleSqrt().domain([this.that.start, this.that.end])
           .range([.1, 30]);
         break;
     }
 
-    that.colorScaleSqrt = d3.scaleSequential(d =>
-      d3.interpolateReds(that.sqrtScale(d))
+    this.that.colorScaleSqrt = d3.scaleSequential(d =>
+      d3.interpolateReds(this.that.sqrtScale(d))
     );
 
-    switch (that.type) {
+    switch (this.that.type) {
       case "Filled":
-        that.legendLabels = [
-          "<" + that.getMetrics(0),
-          ">" + that.getMetrics(0),
-          ">" + that.getMetrics(0.2),
-          ">" + that.getMetrics(0.4),
-          ">" + that.getMetrics(0.6),
-          ">" + that.getMetrics(0.8)
+        this.that.legendLabels = [
+          "<" + this.that.getMetrics(0),
+          ">" + this.that.getMetrics(0),
+          ">" + this.that.getMetrics(0.2),
+          ">" + this.that.getMetrics(0.4),
+          ">" + this.that.getMetrics(0.6),
+          ">" + this.that.getMetrics(0.8)
         ];
         break;
       case "Bubble":
-        that.legendLabels = [
-          "<" + that.getMetrics(0 * 30),
-          ">" + that.getMetrics(0 * 30),
-          ">" + that.getMetrics(0.2 * 30),
-          ">" + that.getMetrics(0.4 * 30),
-          ">" + that.getMetrics(0.6 * 30),
-          ">" + that.getMetrics(0.8 * 30)
+        this.that.legendLabels = [
+          "<" + this.that.getMetrics(0 * 30),
+          ">" + this.that.getMetrics(0 * 30),
+          ">" + this.that.getMetrics(0.2 * 30),
+          ">" + this.that.getMetrics(0.4 * 30),
+          ">" + this.that.getMetrics(0.6 * 30),
+          ">" + this.that.getMetrics(0.8 * 30)
         ];
         break;
     }
 
-    that.g
+    var copy = this.that
+    this.that.g
       .attr("class", "county")
       .selectAll("path")
-      .data(that.merged)
+      .data(copy.merged)
       .enter()
       .append("path")
-
-      .attr("d", that.path)
+      .attr("d", copy.path)
+      .attr("id", function(d) { return d.name ; })
       .attr("class", "feature")
       .on("click", function (d) {
-        that.clicked(d, that, this);
+        copy.clicked(d, copy, this);
       })
       .attr("class", "county")
       .attr("stroke", "grey")
@@ -492,134 +505,101 @@ export class UnitedStatesMapComponent implements OnInit {
       .attr("fill", function (d) {
         var metric = d.metric;
         var metric = metric ? metric : 0;
-        if (that.type == "Filled" && metric > 0) {
-          switch (that.scale) {
+        if(copy.statesSelect.includes(d.abbrev)) {
+            return "#ffa500"
+        }
+        else if (copy.type == "Filled" && metric > 0) {
+          switch (copy.scale) {
             case "Linear":
-              return that.colorScaleLinear(metric);
+              return copy.colorScaleLinear(metric);
             case "Exponential":
-              return that.colorScaleExp(metric);
+              return copy.colorScaleExp(metric);
             case "Logarithmic":
-              return that.colorScaleLog(metric);
+              return copy.colorScaleLog(metric);
             case "Sqrrt":
-              return that.colorScaleSqrt(metric);
+              return copy.colorScaleSqrt(metric);
           }
         } else {
           return "#f2f2f2";
         }
       })
       .on("mouseover", function (d) {
-        that.tooltip
+        copy.tooltip
           .transition()
           .duration(200)
           .style("opacity", 0.9);
 
-        that.tooltip
+          copy.tooltip
           .html(
-            d.name + "<br/><b>Total " + that.metric + ":</b> " + that.formatDecimal(d.metric)
+            d.name + "<br/><b>Total " + copy.metric + ":</b> " + copy.formatDecimal(d.metric)
           )
           .style("left", d3.event.pageX + "px")
           .style("top", d3.event.pageY + "px");
 
-        that.changeDetectorRef.detectChanges();
+          copy.changeDetectorRef.detectChanges();
       })
       .on("mouseout", function (d) {
-        that.tooltip
+        copy.tooltip
           .transition()
           .duration(300)
           .style("opacity", 0);
 
-        that.changeDetectorRef.detectChanges();
+          copy.changeDetectorRef.detectChanges();
       });
 
-
-    if (that.type == "Bubble") {
-      that.g
+      /*
+      this.that.g
         .attr("class", "bubble")
         .selectAll('circle')
-        .data(that.merged)
-        .enter().append("circle")
+        .data(this.that.merged)
+        .enter().append("text")
         .attr("transform", function (d) {
-          var t = that.path.centroid(d);
+          var t = this.that.path.centroid(d);
           if (t[0] > 0 && t[1] > 0) {
+            console.log(t)
             return "translate(" + t[0] + "," + t[1] + ")";
           } else {
             return "";
           }
         })
-        .attr("r", function (d) {
-          switch (that.scale) {
-            case "Linear":
-              return that.linearScale(d.metric);
-            case "Exponential":
-              return that.expScale(d.metric);
-            case "Logarithmic":
-              return that.logScale(d.metric);
-            case "Sqrrt":
-              return that.sqrtScale(d.metric);
-          }
-        })
-        .on("click", function (d) {
-          that.clicked(d, that, this);
-        })
-        .on('mouseover', function (d) {
-          that.tooltip.transition()
-            .duration(200)
-            .style('opacity', .9);
+        .style("text-anchor", "end")
+        .text(function(d) { return d.name.substring(0,2); })
+        .attr("fill","black")
+        .attr("stroke","black");
+*/
 
-          that.tooltip.html(d.name + '<br/><b>Total " + that.metric + ":</b> ' + that.formatDecimal(d.metric))
-            .style('left', (d3.event.pageX) + 'px')
-            .style('top', (d3.event.pageY) + 'px')
-
-          that.changeDetectorRef.detectChanges();;
-        })
-        .on('mouseout', function (d) {
-          that.tooltip.transition()
-            .duration(300)
-            .style('opacity', 0);
-
-          that.changeDetectorRef.detectChanges();;
-        });
-    }
-
-    that.legendContainer = that.svg
+    this.that.legendContainer = this.that.svg
       .append("rect")
-      .attr("x", that.legendContainerSettings.x)
-      .attr("y", that.legendContainerSettings.y)
-      .attr("rx", that.legendContainerSettings.roundX)
-      .attr("ry", that.legendContainerSettings.roundY)
-      .attr("width", that.legendContainerSettings.width)
-      .attr("height", that.legendContainerSettings.height)
+      .attr("x", this.that.legendContainerSettings.x)
+      .attr("y", this.that.legendContainerSettings.y)
+      .attr("rx", this.that.legendContainerSettings.roundX)
+      .attr("ry", this.that.legendContainerSettings.roundY)
+      .attr("width", this.that.legendContainerSettings.width)
+      .attr("height", this.that.legendContainerSettings.height)
       .attr("id", "legend-container");
 
-    var legend = that.svg
+    var legend = this.that.svg
       .selectAll("g.legend")
-      .data(that.legendData)
+      .data(this.that.legendData)
       .enter()
       .append("g")
       .attr("class", "legend")
 
-    if (that.type == 'Filled') {
+    if (this.that.type == 'Filled') {
       legend
         .append("rect")
         .attr("x", function (d, i) {
           return (
-            that.legendContainerSettings.x + that.legendBoxSettings.width * i + 20
+            copy.legendContainerSettings.x + copy.legendBoxSettings.width * i + 20
           );
         })
-        .attr("y", that.legendBoxSettings.y)
-        .attr("width", that.legendBoxSettings.width)
-        .attr("height", that.legendBoxSettings.height)
+        .attr("y", this.that.legendBoxSettings.y)
+        .attr("width", this.that.legendBoxSettings.width)
+        .attr("height", this.that.legendBoxSettings.height)
         .style("fill", function (d, i) {
-          switch (that.scale) {
-            case "Linear":
-              return that.colorScaleLinear(that.linearScale.invert(d));
-            case "Exponential":
-              return that.colorScaleExp(that.expScale.invert(d));
-            case "Logarithmic":
-              return that.colorScaleLog(that.logScale.invert(d));
-            case "Sqrrt":
-              return that.colorScaleSqrt(that.sqrtScale.invert(d));
-          }
+
+              return copy.colorScaleLinear(copy.linearScale.invert(d));
+
         })
         .style("opacity", 1);
 
@@ -627,62 +607,23 @@ export class UnitedStatesMapComponent implements OnInit {
         .append("text")
         .attr("x", function (d, i) {
           return (
-            that.legendContainerSettings.x + that.legendBoxSettings.width * i + 30
+            copy.legendContainerSettings.x + copy.legendBoxSettings.width * i + 30
           );
         })
-        .attr("y", that.legendContainerSettings.y + 72)
+        .attr("y", this.that.legendContainerSettings.y + 72)
         .style("font-size", 12)
         .text(function (d, i) {
-          return that.legendLabels[i];
-        });
-    }
-
-    if (that.type == 'Bubble') {
-      legend
-        .append("circle")
-        .attr("class", "bubble")
-        .attr("cx", function (d, i) {
-          return (
-            that.legendContainerSettings.x + (that.legendBoxSettings.width + 20) * i + 20
-          );
-        })
-        .attr("cy", that.legendBoxSettings.y)
-        .attr("r", function (d, i) {
-          d = d * 30;
-          switch (that.scale) {
-            case "Linear":
-              return that.linearScale(that.linearScale.invert(d));
-            case "Exponential":
-              return that.expScale(that.expScale.invert(d));
-            case "Logarithmic":
-              return that.logScale(that.logScale.invert(d));
-            case "Sqrrt":
-              return that.sqrtScale(that.sqrtScale.invert(d));
-          }
-        })
-
-      legend
-        .append("text")
-        .attr("x", function (d, i) {
-          return (
-            that.legendContainerSettings.x + (that.legendBoxSettings.width + 20) * i + 30
-          );
-        })
-        .attr("y", that.legendContainerSettings.y + 72)
-        .style("font-size", 12)
-        .style("font-weight", "bold")
-        .text(function (d, i) {
-          return that.legendLabels[i];
+          return copy.legendLabels[i];
         });
     }
 
     legend
       .append("text")
-      .attr("x", that.legendContainerSettings.x + 13)
-      .attr("y", that.legendContainerSettings.y + 14)
+      .attr("x", this.that.legendContainerSettings.x + 13)
+      .attr("y", this.that.legendContainerSettings.y + 14)
       .style("font-size", 14)
       .style("font-weight", "bold")
-      .text("COVID-19 " + that.metric + " by State (" + that.scale + ")");
+      .text("COVID-19 " + this.that.metric + " by State (" + this.that.scale + ")");
 
   }
 
@@ -729,8 +670,9 @@ export class UnitedStatesMapComponent implements OnInit {
 
   clicked(d, p, e) {
     if (p.active.node() === e) return p.reset(d, p);
-    p.active.classed("active", false);
+    //p.active.classed("active", false);
     p.active = d3.select(e).classed("active", true);
+
 
     var bounds = p.path.bounds(d),
       dx = bounds[1][0] - bounds[0][0],
@@ -743,12 +685,15 @@ export class UnitedStatesMapComponent implements OnInit {
       ),
       translate = [p.width / 2 - scale * x, p.height / 2 - scale * y];
 
+      console.log([translate, scale])
+
     // Clean up tool tips
     p.tooltip
       .transition()
       .duration(300)
       .style("opacity", 0);
 
+    
     p.svg
       .transition()
       .duration(750)
@@ -757,6 +702,7 @@ export class UnitedStatesMapComponent implements OnInit {
         d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
       )
       .on("end", p.drillDown(translate[0], translate[1], scale, d.abbrev, p.type, p.scale, p.metric, p.date, p.tab)); // updated for d3 v4
+      
   }
 
   drillDown(x, y, scale, state, type, mapScale, metric, date, tab) {
@@ -791,11 +737,17 @@ export class UnitedStatesMapComponent implements OnInit {
   }
 
   selectedScaleChange(value: any) {
+    console.log(value)
+    var data = {type : this.type, scale: this.scale, metric: this.metric, date: this.date, tab: this.tab, statesSelected: this.statesSelect}
+    this.dateChanged.emit(data);
+    this.removeExistingMapFromParent()
+    this.updateMap();
+    /* 
     this.scale = value;
     this.location.go('unitedstates/' + this.type + '/' + this.scale + '/' + this.metric + "/" + this.date + "/" + this.tab);
     this.drillDownService.date = this.date;
-    this.removeExistingMapFromParent();
-    this.updateMap();
+    ;
+    */
   }
 
   selectedTypeChange(e, btn) {
@@ -806,13 +758,19 @@ export class UnitedStatesMapComponent implements OnInit {
     this.updateMap();
   }
 
+
+  filterState(state) {
+    d3.select('path#Florida').dispatch('click');
+  }
   valueChange(e) {
 
     //this.value = e;
+
     this.date = formatDate(new Date(this.value), 'yyyy-MM-dd', 'en');
+    var data = {type : this.type, scale: this.scale, metric: this.metric, date: this.date, tab: this.tab, statesSelected: this.statesSelect}
     this.location.go('unitedstates/' + this.type + '/' + this.scale + '/' + this.metric + "/" + this.date + "/" + this.tab);
     this.drillDownService.date = this.date;
-    this.dateChanged.emit(this.date);
+    this.dateChanged.emit(data);
     this.removeExistingMapFromParent();
     this.updateMap();
   }

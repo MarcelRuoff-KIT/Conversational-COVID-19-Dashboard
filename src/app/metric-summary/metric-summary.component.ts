@@ -1,8 +1,7 @@
 import { Component, OnInit, Input, ViewChild } from '@angular/core';
-
 import * as d3 from "d3";
 import * as statedata from "../data/states-historical.json";
-import countydata from "../data/counties-historical.json";
+import coviddata from "../data/timeseries covid summary.json";
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
@@ -42,7 +41,7 @@ export class MetricSummaryComponent implements OnInit {
       .subscribe((event: NavigationEnd) => {
         this.route.params.subscribe(params => {
           if (this.route.snapshot.params['selectedState']) {
-            this.selectedState = this.route.snapshot.params['selectedState'];
+            this.selectedState = [this.route.snapshot.params['selectedState']];
           }
           else {
             this.selectedState = 'United States';
@@ -76,13 +75,13 @@ export class MetricSummaryComponent implements OnInit {
 
     that = this;
 
-    if (this.selectedState == 'United States') {
-      this.covid = statedata.states;
+    if (this.selectedState == 'United States' || (Array.isArray(this.selectedState) && this.selectedState.length === 0)) {
+      this.covid = coviddata.states;
     }
     else {
-      this.covid = countydata.counties;
+      this.covid = coviddata.states;
       this.covid = this.covid.filter(function (d) {
-        return d.state === that.selectedState
+        return that.selectedState.includes(d.state)
       });
     }
     
@@ -122,6 +121,8 @@ export class MetricSummaryComponent implements OnInit {
     this.covid.forEach((element) => {
       element.dateTime = new Date(element.date);
     });
+
+    console.log("hello")
   }
 
 }

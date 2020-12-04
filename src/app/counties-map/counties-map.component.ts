@@ -2,6 +2,7 @@ import { Component, OnInit, ElementRef, ViewEncapsulation, Input, SimpleChanges,
 
 import countiesdata from "../data/counties.json";
 import * as coviddata from "../data/counties-historical.json";
+import * as coviddataV2 from "../data/timeseries covid county.json";
 import * as d3 from 'd3';
 import * as topojson from 'topojson';
 import { Subscription } from 'rxjs';
@@ -73,7 +74,9 @@ export class CountiesMapComponent implements OnInit {
 
   legendData = [0, 0.2, 0.4, 0.6, 0.8, 1];
 
+  covidSelected: any[] = []; 
   merged: any[] = [];
+  covidV2: any[] = [];
   covid: any[] = [];
   counties: any[] = [];
   c: any[] = [];
@@ -214,7 +217,7 @@ export class CountiesMapComponent implements OnInit {
       .projection(this.projection);
 
     this.svg = d3.select(this.hostElement).append('svg')
-      .attr('width', this.width)
+      .attr('width', this.width - 100)
       .attr('height', this.height + 75)
       .on("click", this.stopped, true);
 
@@ -229,30 +232,34 @@ export class CountiesMapComponent implements OnInit {
       });
 
     //this.svg
-    // .call(this.zoom); // delete this line to disable free zooming
+    //.call(this.zoom); // delete this line to disable free zooming
 
     this.g = this.svg.append('g');
 
     that.covid = coviddata.counties;
+    that.covidV2 = coviddataV2.counties;
 
     that.dateMax = d3.max(that.covid, function (d: any) {
       return d.date
     });
+    
 
     // Slider values
-    that.min = new Date(that.dateMin).getTime();
-    var max = new Date(that.dateMax);
+    that.min = new Date("2020-01-22").getTime();
+    var max = new Date("2020-12-02");
     max.setHours(23, 59, 59, 999);
     that.max = max.getTime();
 
     // default to end date
+    /*
     if (!that.date) {
       that.date = that.dateMax;
       that.slider.value = that.value;
     }
+    */
 
     // Set date to max date if no data available
-    if (that.date > that.dateMax) {
+    if (that.date > that.max) {
       that.date = that.dateMax;
       that.value = that.max;
       this.location.go('counties/' + this.selectedState + '/' + this.type + '/' + this.scale + '/' + this.metric + '/' + this.date);
@@ -260,11 +267,11 @@ export class CountiesMapComponent implements OnInit {
 
 
     var covidMax = that.covid.filter(function (d) {
-      return d.date === that.dateMax && d.state === that.selectedState
+      return d.date === that.dateMax  && d.state === that.selectedState
     });
 
     var covid = that.covid.filter(function (d) {
-      return d.state === that.selectedState
+      return d.state  === that.selectedState
     });
 
     that.start = 1;
@@ -272,16 +279,6 @@ export class CountiesMapComponent implements OnInit {
     // Get data for max date
 
     switch (that.metric) {
-      case "Daily Deaths":
-        that.end = d3.max(covid, function (d: any) {
-          return d.daily_deaths;
-        })
-        break;
-      case "Daily Cases":
-        that.end = d3.max(covid, function (d: any) {
-          return d.daily_cases;
-        })
-        break;
       case "Total Cases":
         that.end = d3.max(covidMax, function (d: any) {
           return d.cases;
@@ -294,16 +291,24 @@ export class CountiesMapComponent implements OnInit {
         break;
     }
 
+    that.covidV2.forEach(function(item){
+      that.covidSelected.push({"fips": item["fips"], "county": item["County"], "state": item["State"], "cases": item[that.date]});
+    })
+
     // Get current date
-    that.covid = that.covid.filter(function (d) {
-      return d.date === that.date && d.state === that.selectedState
+    that.covid = that.covidSelected.filter(function (d) {
+      return d.state === that.selectedState
     });
+
 
     that.counties = topojson.feature(countiesdata, countiesdata.objects.collection).features;
 
 
     if (that.selectedState != 'All') {
-      that.counties = that.counties.filter(function (d) { return d.properties.state === that.selectedState });
+      that.counties = that.counties.filter(function (d) 
+      { 
+        return true// d.properties.state === that.selectedState 
+      });
 
       if (that.drillDownService.x && performZoom) {
         that.svg.transition()
@@ -317,6 +322,8 @@ export class CountiesMapComponent implements OnInit {
       }
 
     }
+
+
 
     that.merged = that.join(that.covid, that.counties, "fips", "fips", function (county, covid) {
 
@@ -474,9 +481,10 @@ export class CountiesMapComponent implements OnInit {
           return "#f2f2f2";
         }
       })
-      //.on('click', function (d) {
+      .on('click', function (d) {
+        that.clicked(d, that, this);
       //  that.clicked(d, that);
-      //})
+      })
       .on('mouseover', function (d) {
         that.tooltip.transition()
           .duration(200)
@@ -589,45 +597,6 @@ export class CountiesMapComponent implements OnInit {
         });
     }
 
-    if (that.type == 'Bubble') {
-      legend
-        .append("circle")
-        .attr("class", "bubble")
-        .attr("cx", function (d, i) {
-          return (
-            that.legendContainerSettings.x + (that.legendBoxSettings.width + 20) * i + 20
-          );
-        })
-        .attr("cy", that.legendBoxSettings.y)
-        .attr("r", function (d, i) {
-          d = d * 30;
-          switch (that.scale) {
-            case "Linear":
-              return that.linearScale(that.linearScale.invert(d));
-            case "Exponential":
-              return that.expScale(that.expScale.invert(d));
-            case "Logarithmic":
-              return that.logScale(that.logScale.invert(d));
-            case "Sqrrt":
-              return that.sqrtScale(that.sqrtScale.invert(d));
-          }
-        })
-
-      legend
-        .append("text")
-        .attr("x", function (d, i) {
-          return (
-            that.legendContainerSettings.x + (that.legendBoxSettings.width + 20) * i + 30
-          );
-        })
-        .attr("y", that.legendContainerSettings.y + 72)
-        .style("font-size", 12)
-        .style("font-weight", "bold")
-        .text(function (d, i) {
-          return that.legendLabels[i];
-        });
-    }
-
     legend
       .append("text")
       .attr("x", that.legendContainerSettings.x + 13)
@@ -636,6 +605,12 @@ export class CountiesMapComponent implements OnInit {
       .style("font-weight", "bold")
       .text("COVID-19 " + this.metric + ' by County (' + that.scale + ")");
 
+  }
+
+  clicked(d, p, e) {
+    if (p.active.node() === e) return p.reset(d, p);
+    p.active.classed("active", false);
+    p.active = d3.select(e).classed("active", true);
   }
 
   getMetrics(rangeValue) {
@@ -655,10 +630,12 @@ export class CountiesMapComponent implements OnInit {
     p.active.classed("active", false);
     p.active = d3.select(null);
 
+    /*
     p.svg.transition()
       .duration(750)
       // .call( zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1) ); // not in d3 v4
       .call(p.zoom.transform, d3.zoomIdentity); // updated for d3 v4
+      */
   }
 
   // If the drag behavior prevents the default click,

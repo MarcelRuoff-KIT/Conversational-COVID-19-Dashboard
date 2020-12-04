@@ -31,10 +31,17 @@
     </div>
     <div class="col-md-6"   >
       <kendo-label text="Scale:"class="float-right">&nbsp;
-        <kendo-dropdownlist #scaleDropDown [data]="scaleButtons" valuePrimitive="true"
-                             (selectionChange)="selectedScaleChange($event)"
-                             [(ngModel)]="scale">
-        </kendo-dropdownlist>
+        <kendo-multiselect #scaleDropDown 
+          [data]="scaleButtons" 
+          valuePrimitive="true"
+          kendoMultiSelectSummaryTag
+          [clearButton]="false"
+          [autoClose]="false"
+          [placeholder]="'Select States...'"
+          (valueChange)="selectedScaleChange($event)"
+          [(ngModel)]="statesSelect">
+                             
+        </kendo-multiselect>
         </kendo-label>
 
     </div>

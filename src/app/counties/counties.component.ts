@@ -66,21 +66,11 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
                 break;
             }
           }
-          if (this.route.snapshot.params['selectedType']) {
-            this.type = this.route.snapshot.params['selectedType'];
-          }
-
-          if (this.route.snapshot.params['selectedScale']) {
-            this.scale = this.route.snapshot.params['selectedScale'];
-          }
 
           if (this.route.snapshot.params['selectedDate']) {
             this.date = this.route.snapshot.params['selectedDate'];
           }
 
-          if (this.route.snapshot.params['selectedTab']) {
-            this.tab = this.route.snapshot.params['selectedTab'];
-          }
         });
 
       });
@@ -92,7 +82,7 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
   
   }
   public filterDashboard(filter) {
-    this.router.navigateByUrl("/counties/" + filter + '/' + this.type + '/' + this.scale + '/' + this.metric + "/" + this.date + "/" + this.tab);
+    this.router.navigateByUrl("/counties/" + filter + '/' + this.metric + "/" + this.date );
   }
 
   public ngAfterViewInit(): void {
@@ -163,7 +153,7 @@ const store = window.WebChat.createStore(
       );
 
       window.addEventListener('webchatincomingactivity', ({ data }) => {
-        if (data.type == 'event') {
+        if (data.type == 'event' && this.router.url.includes("counties")) {
             console.log(data)
 
             //display seed change by adding branch
@@ -171,6 +161,10 @@ const store = window.WebChat.createStore(
                 console.log(data.value)
                 this.filterDashboard(data.value[1])
             }
+            else if (data.name == "DrillDown") {
+              console.log(data.value)
+              this.filterDashboard(data.value)
+          }
         }
     });
 
@@ -200,7 +194,7 @@ const store = window.WebChat.createStore(
   }
 
   navigateLeft() {
-    this.router.navigate(['/unitedstates' + "/" + this.countiesMap.type + "/" + this.countiesMap.scale + "/" + this.countiesMap.metric + "/" + this.countiesMap.date + "/" + this.countiesMap.tab]);
+    this.router.navigate(['/unitedstates' +  "/" + this.countiesMap.metric + "/" + this.countiesMap.date ]);
   }
 
   navigateRight() {

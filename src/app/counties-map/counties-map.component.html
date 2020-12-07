@@ -6,37 +6,16 @@
 
   <div class="row">
     <div class="col-md-3">
-      <kendo-buttongroup [selection]="'single'">
-        <button *ngFor="let button of typeButtons"
-                kendoButton
-                [toggleable]="true"
-                [selected]="button.selected"
-                (selectedChange)="selectedTypeChange($event, button)">
-          <span>
-            {{ button.text }}
-          </span>
-        </button>
-      </kendo-buttongroup>
-
-    </div>
-    <div class="col-md-3">
+      <kendo-label text="Date:"class="float-right">&nbsp;
       <kendo-slider #slider [tickPlacement]="tickPlacement"
                     [min]="min"
                     [max]="max"
                     [smallStep]="smallStep"
-                    (valueChange)="valueChange($event)"></kendo-slider>:
-
+                    (valueChange)="valueChange($event)"></kendo-slider>
+                  </kendo-label>
     </div>
-    <div class="col-md-6">
-      <kendo-label text="Scale:" class="float-right">
-        &nbsp;
-        <kendo-dropdownlist #scaleDropDown [data]="scaleButtons" valuePrimitive="true"
-                            (selectionChange)="selectedScaleChange($event)"
-                            [(ngModel)]="scale">
-        </kendo-dropdownlist>
-      </kendo-label>
-
-    </div>
+    <div class="col-md-3"></div>
+    <div class="col-md-6"></div>
   </div>
   <div class="row">
     <div class="col-md-12">

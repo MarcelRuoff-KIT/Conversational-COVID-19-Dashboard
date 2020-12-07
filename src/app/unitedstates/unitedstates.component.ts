@@ -147,7 +147,7 @@ const store = window.WebChat.createStore(
 );
 
       window.addEventListener('webchatincomingactivity', ({ data }) => {
-        if (data.type == 'event') {
+        if (data.type == 'event' && this.router.url.includes("unitedstates")) {
             console.log(data)
 
             //display seed change by adding branch
@@ -155,6 +155,10 @@ const store = window.WebChat.createStore(
                 console.log(data.value)
                 this.filterDashboard(data.value)
             }
+            else if (data.name == "DrillDown") {
+              console.log(data.value)
+              this.drillDown(data.value)
+          }
         }
     });
 
@@ -184,7 +188,12 @@ const store = window.WebChat.createStore(
 
   }
 
+  public drillDown(state){
+    this.unitedStatesMap.select(state)
+  }
+
   public filterDashboard(values){
+    console.log(this.router.url)
     var FilterValues = new Map();
                     var PageFilter = new Map();
                     for (var i = 0; i < values.length; i += 2) {
@@ -204,6 +213,14 @@ const store = window.WebChat.createStore(
                       if(key == "States"){
                         this.unitedStatesMap.statesSelect = value;
                         this.metricSummary.selectedState = value;
+                      }
+                      if(key == "Datum"){
+                        if(value.includes("XXXX")){
+                          value = value.replace("XXXX", 2020)
+                        }
+                        this.unitedStatesMap.date = value;
+                        this.metricSummary.date = value;
+                        this.router.navigate(['unitedstates/' + this.metric + "/" + value ]);
                       }
                       this.unitedStatesMap.removeExistingMapFromParent();
                       this.unitedStatesMap.updateMap()

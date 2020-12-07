@@ -48,14 +48,14 @@ export class CountiesMapComponent implements OnInit {
   legendContainerSettings = {
     x: 0,
     y: this.height,
-    width: 420,
+    width: 520,
     height: 75,
     roundX: 10,
     roundY: 10
   };
 
   legendBoxSettings = {
-    width: 50,
+    width: 75,
     height: 15,
     y: this.legendContainerSettings.y + 38
   };
@@ -86,22 +86,15 @@ export class CountiesMapComponent implements OnInit {
 
   numBars = 6;
   start = 1;
-  end;
+  end = 400000;
   scale = "Sqrrt";
   type = "Filled";
   metric = "Total Cases";
   date;
   dateMin = "2020-01-21";
   dateMax;
-  tab = "Totals";
 
 
-  linearScale;
-  colorScaleLinear;
-  expScale;
-  colorScaleExp;
-  logScale;
-  colorScaleLog;
   sqrtScale;
   colorScaleSqrt;
 
@@ -135,22 +128,9 @@ export class CountiesMapComponent implements OnInit {
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
       this.route.params.subscribe(params => {
+
+
         this.selectedState = this.route.snapshot.params['selectedState'];
-        if (this.route.snapshot.params['selectedType']) {
-          var button = this.typeButtons.find(({ text }) => text === this.type);
-          button.selected = false;
-          this.type = this.route.snapshot.params['selectedType'];
-          var button = this.typeButtons.find(({ text }) => text === this.type);
-          button.selected = true;
-        }
-
-        if (this.route.snapshot.params['selectedScale']) {
-          this.scale = this.route.snapshot.params['selectedScale'];
-        }
-
-        if (this.route.snapshot.params['selectedTab']) {
-          this.tab = this.route.snapshot.params['selectedTab'];
-        }
 
         if (this.route.snapshot.params['selectedMetric']) {
           this.metric = this.route.snapshot.params['selectedMetric'];
@@ -262,34 +242,9 @@ export class CountiesMapComponent implements OnInit {
     if (that.date > that.max) {
       that.date = that.dateMax;
       that.value = that.max;
-      this.location.go('counties/' + this.selectedState + '/' + this.type + '/' + this.scale + '/' + this.metric + '/' + this.date);
+      this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date);
     }
 
-
-    var covidMax = that.covid.filter(function (d) {
-      return d.date === that.dateMax  && d.state === that.selectedState
-    });
-
-    var covid = that.covid.filter(function (d) {
-      return d.state  === that.selectedState
-    });
-
-    that.start = 1;
-
-    // Get data for max date
-
-    switch (that.metric) {
-      case "Total Cases":
-        that.end = d3.max(covidMax, function (d: any) {
-          return d.cases;
-        })
-        break;
-      case "Total Deaths":
-        that.end = d3.max(covidMax, function (d: any) {
-          return d.deaths;
-        })
-        break;
-    }
 
     that.covidV2.forEach(function(item){
       that.covidSelected.push({"fips": item["fips"], "county": item["County"], "state": item["State"], "cases": item[that.date]});
@@ -309,6 +264,19 @@ export class CountiesMapComponent implements OnInit {
       { 
         return true// d.properties.state === that.selectedState 
       });
+
+      var stateParameters = this.drillDownService.countiesMapped.find(stateElement => stateElement.State === that.selectedState)
+
+      console.log(stateParameters)
+    
+      this.drillDownService.scale = stateParameters.scale;
+      if (that.selectedState == "Alaska" || that.selectedState == "Hawaii") {
+       this.drillDownService.x = stateParameters.x - 300;
+       this.drillDownService.y = stateParameters.y - 50;
+     } else {
+       this.drillDownService.x = stateParameters.x;
+       this.drillDownService.y = stateParameters.y;
+     }
 
       if (that.drillDownService.x && performZoom) {
         that.svg.transition()
@@ -355,101 +323,23 @@ export class CountiesMapComponent implements OnInit {
     // Sort for bubble overlays
     that.merged = that.merged.sort((a, b) => a.metric > b.metric ? - 1 : (a.metric < b.metric ? 1 : 0));
 
-
-    // Linear Scale
-    switch (that.type) {
-      case "Filled":
-        that.linearScale = d3.scaleLinear()
-          .domain([that.start, that.end])
-          .range([0, 1]);
-        break;
-      case "Bubble":
-        that.linearScale = d3.scaleLinear()
-          .domain([that.start, that.end])
-          .range([0, 8]);
-        break;
-    }
-
-    that.colorScaleLinear = d3.scaleSequential(d =>
-      d3.interpolateReds(that.linearScale(d))
-    );
-
-    // Exponential Scale
-    switch (that.type) {
-      case "Filled":
-        that.expScale = d3
-          .scalePow()
-          .exponent(Math.E)
-          .domain([that.start, that.end])
-          .range([0, 1]);
-        break;
-      case "Bubble":
-        that.expScale = d3
-          .scalePow()
-          .exponent(Math.E)
-          .domain([that.start, that.end])
-          .range([0, 8]);
-        break;
-    }
-
-    that.colorScaleExp = d3.scaleSequential(d =>
-      d3.interpolateReds(that.expScale(d))
-    );
-
-    // Log Scale
-    switch (that.type) {
-      case "Filled":
-        that.logScale = d3.scaleLog().domain([that.start, that.end])
-          .range([0, 1]);
-        break;
-      case "Bubble":
-        that.logScale = d3.scaleLog().domain([that.start, that.end])
-          .range([0, 8]);
-        break;
-    }
-
-    that.colorScaleLog = d3.scaleSequential(d =>
-      d3.interpolateReds(that.logScale(d))
-    );
-
     // Sqrt Scale
-    switch (that.type) {
-      case "Filled":
-        that.sqrtScale = d3.scaleSqrt().domain([that.start, that.end])
-          .range([.1, 1]);
-        break;
-      case "Bubble":
-        that.sqrtScale = d3.scaleSqrt().domain([that.start, that.end])
-          .range([.1, 8]);
-        break;
-    }
+    that.sqrtScale = d3.scaleSqrt().domain([that.start, that.end])
+      .range([0, 1]);
 
     that.colorScaleSqrt = d3.scaleSequential(d =>
       d3.interpolateReds(that.sqrtScale(d))
     );
 
-    switch (that.type) {
-      case "Filled":
-        that.legendLabels = [
-          "<" + that.getMetrics(0),
-          ">" + that.getMetrics(0),
-          ">" + that.getMetrics(0.2),
-          ">" + that.getMetrics(0.4),
-          ">" + that.getMetrics(0.6),
-          ">" + that.getMetrics(0.8)
-        ];
-        break;
-      case "Bubble":
-        that.legendLabels = [
-          "<" + that.getMetrics(0 * 30),
-          ">" + that.getMetrics(0 * 30),
-          ">" + that.getMetrics(0.2 * 30),
-          ">" + that.getMetrics(0.4 * 30),
-          ">" + that.getMetrics(0.6 * 30),
-          ">" + that.getMetrics(0.8 * 30)
-        ];
-        break;
-    }
+    that.legendLabels = [
+      "<" + that.getMetrics(0.2),
+      ">" + that.getMetrics(0.2),
+      ">" + that.getMetrics(0.4),
+      ">" + that.getMetrics(0.6),
+      ">" + that.getMetrics(0.8),
+      "<" + that.getMetrics(1)
+    ];
+
 
     that.g
       .attr('class', 'county')
@@ -465,17 +355,8 @@ export class CountiesMapComponent implements OnInit {
       .attr('fill', function (d) {
         var metric = d.metric;
         var metric = metric ? metric : 0;
-        if (that.type == "Filled" && metric > 0) {
-          switch (that.scale) {
-            case "Linear":
-              return that.colorScaleLinear(metric);
-            case "Exponential":
-              return that.colorScaleExp(metric);
-            case "Logarithmic":
-              return that.colorScaleLog(metric);
-            case "Sqrrt":
-              return that.colorScaleSqrt(metric);
-          }
+        if (metric > 0) {
+            return that.colorScaleSqrt(metric)
         }
         else {
           return "#f2f2f2";
@@ -512,16 +393,7 @@ export class CountiesMapComponent implements OnInit {
         .enter().append("circle")
         .attr("transform", function (d) { return "translate(" + that.path.centroid(d) + ")"; })
         .attr("r", function (d) {
-          switch (that.scale) {
-            case "Linear":
-              return that.linearScale(d.metric);
-            case "Exponential":
-              return that.expScale(d.metric);
-            case "Logarithmic":
-              return that.logScale(d.metric);
-            case "Sqrrt":
-              return that.sqrtScale(d.metric);
-          }
+              return that.sqrtScale(d.metric)
         })
         .on('mouseover', function (d) {
           that.tooltip.transition()
@@ -570,16 +442,7 @@ export class CountiesMapComponent implements OnInit {
         .attr("width", that.legendBoxSettings.width)
         .attr("height", that.legendBoxSettings.height)
         .style("fill", function (d, i) {
-          switch (that.scale) {
-            case "Linear":
-              return that.colorScaleLinear(that.linearScale.invert(d));
-            case "Exponential":
-              return that.colorScaleExp(that.expScale.invert(d));
-            case "Logarithmic":
-              return that.colorScaleLog(that.logScale.invert(d));
-            case "Sqrrt":
-              return that.colorScaleSqrt(that.sqrtScale.invert(d));
-          }
+              return that.colorScaleSqrt(that.sqrtScale.invert(d))
         })
         .style("opacity", 1);
 
@@ -603,7 +466,7 @@ export class CountiesMapComponent implements OnInit {
       .attr("y", that.legendContainerSettings.y + 14)
       .style("font-size", 14)
       .style("font-weight", "bold")
-      .text("COVID-19 " + this.metric + ' by County (' + that.scale + ")");
+      .text("COVID-19 " + this.metric + ' by County ');
 
   }
 
@@ -614,16 +477,7 @@ export class CountiesMapComponent implements OnInit {
   }
 
   getMetrics(rangeValue) {
-    switch (this.scale) {
-      case "Linear":
-        return this.formatDecimal(this.linearScale.invert(rangeValue));
-      case "Exponential":
-        return this.formatDecimal(this.expScale.invert(rangeValue));
-      case "Logarithmic":
-        return this.formatDecimal(this.logScale.invert(rangeValue));
-      case "Sqrrt":
-        return this.formatDecimal(this.sqrtScale.invert(rangeValue));
-    }
+        return this.formatDecimal(this.sqrtScale.invert(rangeValue))
   }
 
   reset(d, p) {
@@ -667,24 +521,10 @@ export class CountiesMapComponent implements OnInit {
     return output;
   }
 
-  selectedScaleChange(value) {
-    this.scale = value;
-    this.location.go('counties/' + this.selectedState + '/' + this.type + '/' + this.scale + '/' + this.metric + '/' + this.date);
-    this.removeExistingMapFromParent();
-    this.updateMap(true);
-  }
-
-  selectedTypeChange(e, btn) {
-    this.type = btn.text;
-    this.location.go('counties/' + this.selectedState + '/' + this.type + '/' + this.scale + '/' + this.metric + '/' + this.date);
-    this.removeExistingMapFromParent();
-    this.updateMap(true);
-  }
-
   valueChange(e) {
     this.value = e;
     this.date = formatDate(new Date(this.value), 'yyyy-MM-dd', 'en');
-    this.location.go('counties/' + this.selectedState + '/' + this.type + '/' + this.scale + '/' + this.metric + '/' + this.date);
+    this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date);
     this.dateChanged.emit(this.date);
     this.removeExistingMapFromParent();
     this.updateMap(false);

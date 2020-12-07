@@ -121,8 +121,6 @@ export class MetricSummaryComponent implements OnInit {
     this.covid.forEach((element) => {
       element.dateTime = new Date(element.date);
     });
-
-    console.log("hello")
   }
 
 }

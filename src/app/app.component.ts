@@ -51,21 +51,11 @@ export class AppComponent implements OnInit {
 
   private _routerSub = Subscription.EMPTY;
 
-  @ViewChild('drawer') drawer;
-  @ViewChild('navmenu') navmenu;
 
   
 
   date = formatDate(new Date().setDate(new Date().getDate() - 1), 'yyyy-MM-dd', 'en');
 
-  public items: Array<any> = [
-    { text: 'Cases', icon: 'place', path: '/unitedstates/Filled/Sqrrt/Total Cases/' + this.date  + '/Totals' },
-    { text: 'Daily Cases', icon: 'place', path: '/unitedstates/Filled/Sqrrt/Daily Cases/' + this.date + '/Daily' },
-    { text: 'Deaths', icon: 'warning', path: '/unitedstates/Filled/Sqrrt/Total Deaths/' + this.date + '/Totals'},
-    { text: 'Daily Deaths', icon: 'warning', path: '/unitedstates/Filled/Sqrrt/Daily Deaths/' + this.date + '/Daily' },
-    { text: 'About', icon: 'contact_mail', path: '/about' },
-
-  ];
 
   public onSelect(ev: DrawerSelectEvent): void {
     this.selected = ev.item.text;

@@ -57,13 +57,6 @@ export class AppComponent implements OnInit {
   date = formatDate(new Date().setDate(new Date().getDate() - 1), 'yyyy-MM-dd', 'en');
 
 
-  public onSelect(ev: DrawerSelectEvent): void {
-    this.selected = ev.item.text;
-  }
-
-  public switchExpanded(): void {
-    this.drawer.toggle();
-  }
 
   constructor(
     private elRef: ElementRef,

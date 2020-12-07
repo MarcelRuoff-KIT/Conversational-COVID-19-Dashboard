@@ -9,7 +9,6 @@ import { CountiesComponent } from './counties/counties.component';
 
 import { UnitedStatesMapComponent} from './unitedstates-map/unitedstates-map.component'
 import { CountiesMapComponent } from './counties-map/counties-map.component';
-import { NavMenuComponent } from './components/navmenu/navmenu.component';
 
 import { DrillDownService } from './shared/drilldown.services';
 import { ButtonsModule } from '@progress/kendo-angular-buttons';
@@ -20,7 +19,6 @@ import { LabelModule } from '@progress/kendo-angular-label';
 import { MetricSummaryComponent } from './metric-summary/metric-summary.component';
 import { ChartsModule } from '@progress/kendo-angular-charts';
 import 'hammerjs';
-import { AboutComponent } from './about/about.component';
 import { DropDownsModule } from '@progress/kendo-angular-dropdowns';
 import { FormsModule } from '@angular/forms';
 import { GridModule } from '@progress/kendo-angular-grid';
@@ -40,9 +38,7 @@ import { MetricTableComponent } from './metric-table/metric-table.component';
     UnitedStatesMapComponent,
     CountiesComponent,
     CountiesMapComponent,
-    NavMenuComponent,
     MetricSummaryComponent,
-    AboutComponent,
     MetricTableComponent
   ],
   imports: [

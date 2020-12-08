@@ -20,11 +20,17 @@
   flex-direction: column;
   position: relative;
   justify-content: flex-end;
+  border: 1px solid #122e51;
+}
+
+.nopadding {
+  padding-left: 0 !important;
+  margin: 0 !important;
 }
 
 .kendo-card {
   border: 1px solid #122e51;
-  border-radius: 10px;
+  border-radius: 0px;
   -moz-border-radius: 10px;
   -webkit-border-radius: 10px;
   min-height: 320px;

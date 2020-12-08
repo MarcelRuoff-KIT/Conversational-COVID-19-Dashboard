@@ -29,7 +29,9 @@
           [autoClose]="false"
           [placeholder]="'Select States...'"
           (valueChange)="selectedScaleChange($event)"
-          [(ngModel)]="statesSelect">
+          [(ngModel)]="statesSelect"
+          [popupSettings]="{ width: 300, height: 50 }"
+          style="width: 300px; height: 50px;">
                              
         </kendo-multiselect>
         </kendo-label>

@@ -1,9 +1,8 @@
 <div class="card-container">
   <div class="row">
-    <div class="col-md-8">
-      <kendo-card class="kendo-card" style="min-width:900px">
+    <div class="col-md-8 nopadding">
+      <kendo-card class="kendo-card" style="min-width:1000px">
         <kendo-card-body>
-          <i class="material-icons">{{icon}}</i>
           <div class="card-title"><h4><button kendoButton [icon]="'arrow-chevron-left'" (click)="navigateLeft()"></button>&nbsp;{{metric}} in {{countiesMap.selectedState }} - {{countiesMap.date }}</h4></div>
           <app-counties-map (dateChanged)="dateChanged($event)" #countiesMap></app-counties-map>
         </kendo-card-body>
@@ -13,9 +12,8 @@
       <div class="container">
         <div class="row">
           <div class="col-md">
-            <kendo-card class="kendo-card" style="min-width:400px">
+            <kendo-card class="kendo-card" style="min-width:500px">
               <kendo-card-body>
-                <i class="material-icons">{{icon}}</i>
                 <div class="card-title"><h4>Metrics in {{countiesMap.selectedState }}</h4></div>
                 <app-metric-summary #metricSummary></app-metric-summary>
               </kendo-card-body>

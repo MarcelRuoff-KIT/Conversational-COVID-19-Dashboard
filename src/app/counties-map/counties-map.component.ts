@@ -1,7 +1,6 @@
 import { Component, OnInit, ElementRef, ViewEncapsulation, Input, SimpleChanges, OnChanges, ChangeDetectorRef, ViewChild, EventEmitter, Output } from '@angular/core';
 
 import countiesdata from "../data/counties.json";
-import * as coviddata from "../data/counties-historical.json";
 import * as coviddataV2 from "../data/timeseries covid county.json";
 import * as d3 from 'd3';
 import * as topojson from 'topojson';
@@ -76,7 +75,6 @@ export class CountiesMapComponent implements OnInit {
 
   covidSelected: any[] = []; 
   merged: any[] = [];
-  covidV2: any[] = [];
   covid: any[] = [];
   counties: any[] = [];
   c: any[] = [];
@@ -98,13 +96,7 @@ export class CountiesMapComponent implements OnInit {
   sqrtScale;
   colorScaleSqrt;
 
-  public scaleButtons = ["Sqrrt", "Linear", "Exponential", "Logarithmic"];
 
-
-  public typeButtons = [
-    { text: "Filled", selected: true },
-    { text: "Bubble" }
-  ];
   private _routerSub = Subscription.EMPTY;
 
   tooltip = d3.select('body').append('div')
@@ -197,7 +189,7 @@ export class CountiesMapComponent implements OnInit {
       .projection(this.projection);
 
     this.svg = d3.select(this.hostElement).append('svg')
-      .attr('width', this.width - 100)
+      .attr('width', this.width)
       .attr('height', this.height + 75)
       .on("click", this.stopped, true);
 
@@ -216,13 +208,9 @@ export class CountiesMapComponent implements OnInit {
 
     this.g = this.svg.append('g');
 
-    that.covid = coviddata.counties;
-    that.covidV2 = coviddataV2.counties;
+    that.covid = coviddataV2["counties"];
 
-    that.dateMax = d3.max(that.covid, function (d: any) {
-      return d.date
-    });
-    
+    that.dateMax = "2020-12-02"
 
     // Slider values
     that.min = new Date("2020-01-22").getTime();
@@ -230,13 +218,6 @@ export class CountiesMapComponent implements OnInit {
     max.setHours(23, 59, 59, 999);
     that.max = max.getTime();
 
-    // default to end date
-    /*
-    if (!that.date) {
-      that.date = that.dateMax;
-      that.slider.value = that.value;
-    }
-    */
 
     // Set date to max date if no data available
     if (that.date > that.max) {
@@ -246,7 +227,7 @@ export class CountiesMapComponent implements OnInit {
     }
 
 
-    that.covidV2.forEach(function(item){
+    that.covid.forEach(function(item){
       that.covidSelected.push({"fips": item["fips"], "county": item["County"], "state": item["State"], "cases": item[that.date]});
     })
 

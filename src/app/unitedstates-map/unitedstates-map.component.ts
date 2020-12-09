@@ -118,7 +118,7 @@ export class UnitedStatesMapComponent implements OnInit {
 
   numBars = 6;
   start = 1;
-  end = 1300000;
+  end = 900000; //1300000
 
   statesSelect = [];
 
@@ -127,6 +127,7 @@ export class UnitedStatesMapComponent implements OnInit {
   dateMin = "2020-01-21";
   dateMax = "2020-12-02";
   tab = "Totals";
+  userID;
 
   sqrtScale;
   colorScaleSqrt;
@@ -163,6 +164,13 @@ export class UnitedStatesMapComponent implements OnInit {
       .subscribe((event: NavigationEnd) => {
         this.route.params.subscribe(params => {
 
+          if (this.route.snapshot.params['userID']) {
+            this.userID = this.route.snapshot.params['userID'];
+          }
+          else {
+            this.userID = "0000000"
+          }
+
           if (this.route.snapshot.params['selectedMetric']) {
             this.metric = this.route.snapshot.params['selectedMetric'];
           }
@@ -183,9 +191,9 @@ export class UnitedStatesMapComponent implements OnInit {
             this.updateMap();
           }
 
-          // Go to homepage defulat
+          // Go to homepage default
           if (this.router.url === "/") {
-            this.location.go('unitedstates/' + this.metric + "/" + this.date);
+            this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID );
           }
 
 
@@ -267,7 +275,7 @@ export class UnitedStatesMapComponent implements OnInit {
     if (that.date > that.dateMax) {
       that.date = that.dateMax;
       that.value = that.max;
-      this.location.go('unitedstates/' + this.metric + "/" + that.date );
+      this.location.go('unitedstates/' + this.metric + "/" + that.date + "/" + that.userID );
     }
     
 
@@ -312,7 +320,7 @@ export class UnitedStatesMapComponent implements OnInit {
       ">" + that.getMetrics(0.4),
       ">" + that.getMetrics(0.6),
       ">" + that.getMetrics(0.8),
-      "<" + that.getMetrics(1)
+      ">" + that.getMetrics(1)
     ];
 
 
@@ -497,7 +505,7 @@ export class UnitedStatesMapComponent implements OnInit {
       this.drillDownService.y = stateParameters.y;
     }
     
-    this.router.navigateByUrl("/counties/" + state + "/" + metric + "/" + date );
+    this.router.navigateByUrl("/counties/" + state + "/" + metric + "/" + date + "/" + this.userID );
   }
 
   join(lookupTable, mainTable, lookupKey, mainKey, select) {
@@ -537,10 +545,9 @@ export class UnitedStatesMapComponent implements OnInit {
   filterState(state) {
     d3.select('path#Florida').dispatch('click');
   }
+
+
   valueChange(e) {
-
-    //this.value = e;
-
     this.date = formatDate(new Date(this.value), 'yyyy-MM-dd', 'en');
     var data = { metric: this.metric, date: this.date, tab: this.tab, statesSelected: this.statesSelect}
     this.location.go('unitedstates/' + this.metric + "/" + this.date);

@@ -39,6 +39,7 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
   type = "Filled";
   tab = "Totals";
   date = "";
+  userID;
 
 
   private _routerSub = Subscription.EMPTY;
@@ -62,6 +63,14 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
             this.date = this.route.snapshot.params['selectedDate'];
           }
 
+          if (this.route.snapshot.params['userID']) {
+            this.userID = this.route.snapshot.params['userID'];
+          }
+          else
+          {
+            this.userID = "0000000"
+          }
+
         });
 
       });
@@ -73,7 +82,7 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
   
   }
   public filterDashboard(filter) {
-    this.router.navigateByUrl("/counties/" + filter + '/' + this.metric + "/" + this.date );
+    this.router.navigateByUrl("/counties/" + filter + "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID );
   }
 
   public ngAfterViewInit(): void {
@@ -185,7 +194,7 @@ const store = window.WebChat.createStore(
   }
 
   navigateLeft() {
-    this.router.navigate(['/unitedstates' +  "/" + this.countiesMap.metric + "/" + this.countiesMap.date ]);
+    this.router.navigate(['/unitedstates' +  "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID]);
   }
 
   navigateRight() {

@@ -84,14 +84,14 @@ export class CountiesMapComponent implements OnInit {
 
   numBars = 6;
   start = 1;
-  end = 400000;
+  end = 40000; //400000
   scale = "Sqrrt";
   type = "Filled";
   metric = "Total Cases";
   date;
   dateMin = "2020-01-21";
   dateMax;
-
+  userID;
 
   sqrtScale;
   colorScaleSqrt;
@@ -127,6 +127,15 @@ export class CountiesMapComponent implements OnInit {
         if (this.route.snapshot.params['selectedMetric']) {
           this.metric = this.route.snapshot.params['selectedMetric'];
         }
+
+        if (this.route.snapshot.params['userID']) {
+          this.userID = this.route.snapshot.params['userID'];
+        }
+        else
+        {
+          this.userID = "0000000"
+        }
+
 
         if (this.route.snapshot.params['selectedDate']) {
           this.date = this.route.snapshot.params['selectedDate'];
@@ -223,7 +232,7 @@ export class CountiesMapComponent implements OnInit {
     if (that.date > that.max) {
       that.date = that.dateMax;
       that.value = that.max;
-      this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date);
+      this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID);
     }
 
 
@@ -318,7 +327,7 @@ export class CountiesMapComponent implements OnInit {
       ">" + that.getMetrics(0.4),
       ">" + that.getMetrics(0.6),
       ">" + that.getMetrics(0.8),
-      "<" + that.getMetrics(1)
+      ">" + that.getMetrics(1)
     ];
 
 
@@ -505,7 +514,7 @@ export class CountiesMapComponent implements OnInit {
   valueChange(e) {
     this.value = e;
     this.date = formatDate(new Date(this.value), 'yyyy-MM-dd', 'en');
-    this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date);
+    this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID);
     this.dateChanged.emit(this.date);
     this.removeExistingMapFromParent();
     this.updateMap(false);

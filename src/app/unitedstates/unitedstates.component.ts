@@ -34,6 +34,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterContentIni
 
   private _routerSub = Subscription.EMPTY;
   public metric = "Total Cases";
+  public userID;
   constructor(private router: Router, public route: ActivatedRoute) {
 
     this._routerSub = router.events.pipe(
@@ -42,6 +43,13 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterContentIni
       this.route.params.subscribe(params => {
         if (this.route.snapshot.params['selectedMetric']) {
           this.metric = this.route.snapshot.params['selectedMetric'];
+        }
+
+        if (this.route.snapshot.params['userID']) {
+          this.userID = this.route.snapshot.params['userID'];
+        }
+        else{
+          this.userID = "0000000";
         }
       });
     });
@@ -84,12 +92,12 @@ const store = window.WebChat.createStore(
       if (action.type === 'DIRECT_LINE/POST_ACTIVITY') {
           //connect outgoing event handler and hand over reported data
           const event = new Event('webchatoutgoingactivity');
-          event.data = action.payload.activity;
+          (<any>event).data = action.payload.activity;
           window.dispatchEvent(event);
       }
       else if (action.type === 'DIRECT_LINE/INCOMING_ACTIVITY') {
           const event = new Event('webchatincomingactivity');
-          event.data = action.payload.activity;
+          (<any>event).data = action.payload.activity;
           window.dispatchEvent(event);
       }
       return next(action);
@@ -205,7 +213,7 @@ const store = window.WebChat.createStore(
                         }
                         this.unitedStatesMap.date = value;
                         this.metricSummary.date = value;
-                        this.router.navigate(['unitedstates/' + this.metric + "/" + value ]);
+                        this.router.navigate(['unitedstates/' + this.metric + "/" + value + "/" + this.userID]);
                       }
                       this.unitedStatesMap.removeExistingMapFromParent();
                       this.unitedStatesMap.updateMap()

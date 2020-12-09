@@ -77,11 +77,14 @@ export class MetricSummaryComponent implements OnInit {
 
     if (this.selectedState == 'United States' || (Array.isArray(this.selectedState) && this.selectedState.length === 0)) {
       this.covid = coviddata.states;
+      this.covid = this.covid.filter(function (d) {
+        return (new Date(d.date) <= new Date(that.date))
+      });
     }
     else {
       this.covid = coviddata.states;
       this.covid = this.covid.filter(function (d) {
-        return that.selectedState.includes(d.state)
+        return (that.selectedState.includes(d.state) && new Date(d.date) <= new Date(that.date))
       });
     }
     
@@ -104,19 +107,6 @@ export class MetricSummaryComponent implements OnInit {
     this.cases = d3.sum(covidSelected, function (d: any) {
       return d.cases;
     });
-
-    this.deaths = d3.sum(covidSelected, function (d: any) {
-      return d.deaths;
-    });
-
-    this.daily_cases = d3.sum(covidSelected, function (d: any) {
-      return d.daily_cases;
-    });
-
-    this.daily_deaths = d3.sum(covidSelected, function (d: any) {
-      return d.daily_deaths;
-    });
-
 
     this.covid.forEach((element) => {
       element.dateTime = new Date(element.date);

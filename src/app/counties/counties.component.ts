@@ -81,8 +81,41 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
   ngOnInit() {
   
   }
-  public filterDashboard(filter) {
-    this.router.navigateByUrl("/counties/" + filter + "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID );
+
+  public filterDashboard(values) {
+    console.log(this.router.url)
+    var FilterValues = new Map();
+                    var PageFilter = new Map();
+                    for (var i = 0; i < values.length; i += 2) {
+                        if (values[i] == "Datum") {
+                            FilterValues.set(values[i], values[i + 1])
+                        }
+                        else if (FilterValues.get(values[i]) == undefined) {
+                            FilterValues.set(values[i], [values[i + 1]])
+                        }
+                        else {
+                            FilterValues.set(values[i], [values[i + 1], ...FilterValues.get(values[i])]);
+                        }
+
+                    }
+                    console.log(FilterValues)
+                    for (var [key, value] of FilterValues.entries()) {
+                      if(key == "States"){
+                        this.countiesMap.selectedState = value[0];
+                        this.metricSummary.selectedState = value;
+                      }
+                      if(key == "Datum"){
+                        if(value.includes("XXXX")){
+                          value = value.replace("XXXX", 2020)
+                        }
+                        this.countiesMap.date = value;
+                        this.metricSummary.date = value;
+                      }
+                      this.countiesMap.removeExistingMapFromParent();
+                      this.countiesMap.updateMap(true)
+                      this.metricSummary.updateSummary();
+                    }
+    this.router.navigateByUrl("/counties/" + this.countiesMap.selectedState + "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID );
   }
 
   public ngAfterViewInit(): void {
@@ -105,12 +138,12 @@ const store = window.WebChat.createStore(
       if (action.type === 'DIRECT_LINE/POST_ACTIVITY') {
           //connect outgoing event handler and hand over reported data
           const event = new Event('webchatoutgoingactivity');
-          event.data = action.payload.activity;
+          (<any>event).data = action.payload.activity;
           window.dispatchEvent(event);
       }
       else if (action.type === 'DIRECT_LINE/INCOMING_ACTIVITY') {
           const event = new Event('webchatincomingactivity');
-          event.data = action.payload.activity;
+          (<any>event).data = action.payload.activity;
           window.dispatchEvent(event);
       }
       return next(action);
@@ -152,18 +185,18 @@ const store = window.WebChat.createStore(
           error => console.log(`Error posting activity ${error}`)
       );
 
-      window.addEventListener('webchatincomingactivity', ({ data }) => {
-        if (data.type == 'event' && this.router.url.includes("counties")) {
-            console.log(data)
+      window.addEventListener('webchatincomingactivity', event => {
+        if ((<any>event).data.type == 'event' && this.router.url.includes("counties")) {
+            console.log((<any>event).data)
 
             //display seed change by adding branch
-            if (data.name == "Filter") {
-                console.log(data.value)
-                this.filterDashboard(data.value[1])
+            if ((<any>event).data.name == "Filter") {
+                console.log((<any>event).data.value)
+                this.filterDashboard((<any>event).data.value)
             }
-            else if (data.name == "DrillDown") {
-              console.log(data.value)
-              this.filterDashboard(data.value)
+            else if ((<any>event).data.name == "DrillDown") {
+              console.log((<any>event).data.value)
+              this.filterDashboard((<any>event).data.value)
           }
         }
     });
@@ -205,8 +238,6 @@ const store = window.WebChat.createStore(
     if (date) {
       this.metricSummary.date = date;
       this.metricSummary.updateSummary();
-      this.metricTable.date = date;
-      this.metricTable.updateSummary();
     }
   }
 }

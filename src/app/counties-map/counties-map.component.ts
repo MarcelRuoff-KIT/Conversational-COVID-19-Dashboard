@@ -163,7 +163,7 @@ export class CountiesMapComponent implements OnInit {
 
   }
 
-  private removeExistingMapFromParent() {
+  public removeExistingMapFromParent() {
     // !!!!Caution!!!
     // Make sure not to do;
     //     d3.select('svg').remove();

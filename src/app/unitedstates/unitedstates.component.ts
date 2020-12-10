@@ -139,18 +139,18 @@ const store = window.WebChat.createStore(
     error => console.log(`Error posting activity ${error}`)
 );
 
-      window.addEventListener('webchatincomingactivity', ({ data }) => {
-        if (data.type == 'event' && this.router.url.includes("unitedstates")) {
-            console.log(data)
+window.addEventListener('webchatincomingactivity', event => {
+        if ((<any>event).data.type == 'event' && this.router.url.includes("unitedstates")) {  //
+            console.log((<any>event).data)
 
             //display seed change by adding branch
-            if (data.name == "Filter") {
-                console.log(data.value)
-                this.filterDashboard(data.value)
+            if ((<any>event).data.name == "Filter") {
+                console.log((<any>event).data.value)
+                this.filterDashboard((<any>event).data.value)
             }
-            else if (data.name == "DrillDown") {
-              console.log(data.value)
-              this.drillDown(data.value)
+            else if ((<any>event).data.name == "DrillDown") {
+              console.log((<any>event).data.value)
+              this.drillDown((<any>event).data.value)
           }
         }
     });
@@ -182,7 +182,7 @@ const store = window.WebChat.createStore(
   }
 
   public drillDown(state){
-    this.unitedStatesMap.select(state)
+    this.unitedStatesMap.select(state[1])
   }
 
   public filterDashboard(values){

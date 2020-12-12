@@ -2,6 +2,7 @@ import { Component, OnInit, ElementRef, ViewEncapsulation, Input, SimpleChanges,
 
 import countiesdata from "../data/counties.json";
 import * as coviddataV2 from "../data/timeseries covid county.json";
+import * as coviddataV2deaths from "../data/time series covid death county.json";
 import * as d3 from 'd3';
 import * as topojson from 'topojson';
 import { Subscription } from 'rxjs';
@@ -81,6 +82,10 @@ export class CountiesMapComponent implements OnInit {
   legendLabels: any[] = [];
   scaleCircle;
   selectedState;
+
+  public listItems: Array<string> = [
+    'Total Cases', 'Total Deaths'
+];
 
   numBars = 6;
   start = 1;
@@ -216,8 +221,16 @@ export class CountiesMapComponent implements OnInit {
     //.call(this.zoom); // delete this line to disable free zooming
 
     this.g = this.svg.append('g');
+    
+    if(this.metric == "Total Cases") {
+      that.covid = coviddataV2["counties"];
+      that.end = 40000;
+      }
+    else if(this.metric == "Total Deaths"){
+      that.covid = coviddataV2deaths["counties"];
+      that.end = 500;
+    }
 
-    that.covid = coviddataV2["counties"];
 
     that.dateMax = "2020-12-02"
 
@@ -285,21 +298,7 @@ export class CountiesMapComponent implements OnInit {
 
     that.merged = that.join(that.covid, that.counties, "fips", "fips", function (county, covid) {
 
-      var metric;
-      switch (that.metric) {
-        case "Total Cases":
-          metric = covid ? covid.cases : 0;
-          break;
-        case "Total Deaths":
-          metric = covid ? covid.deaths : 0;
-          break;
-        case "Daily Cases":
-          metric = covid ? covid.daily_cases : 0;
-          break;
-        case "Daily Deaths":
-          metric = covid ? covid.daily_deaths : 0;
-          break;
-      }
+      var metric = covid ? covid.cases : 0;
 
       return {
         name: county.properties.name,
@@ -511,11 +510,21 @@ export class CountiesMapComponent implements OnInit {
     return output;
   }
 
-  valueChange(e) {
-    this.value = e;
+  valueChange(value: any) {
+    this.value = value;
     this.date = formatDate(new Date(this.value), 'yyyy-MM-dd', 'en');
+    var data = { metric: this.metric, date: this.date}
     this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID);
-    this.dateChanged.emit(this.date);
+    this.dateChanged.emit(data);
+    this.removeExistingMapFromParent();
+    this.updateMap(false);
+  }
+
+  selectedMetricChange(value: any) {
+    this.metric = value;
+    var data = { metric: this.metric, date: this.date}
+    this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID);
+    this.dateChanged.emit(data);
     this.removeExistingMapFromParent();
     this.updateMap(false);
   }

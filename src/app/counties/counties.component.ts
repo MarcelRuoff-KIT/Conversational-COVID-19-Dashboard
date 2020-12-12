@@ -7,7 +7,6 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { CountiesMapComponent } from '../counties-map/counties-map.component';
 import { MetricSummaryComponent } from '../metric-summary/metric-summary.component';
-import { MetricTableComponent } from '../metric-table/metric-table.component';
 
 /**
  * Declares the WebChat property on the window object.
@@ -29,7 +28,6 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
 
   @ViewChild('countiesMap', { static: true }) countiesMap: CountiesMapComponent;
   @ViewChild('metricSummary', { static: true }) metricSummary: MetricSummaryComponent;
-  @ViewChild('metricTable', { static: true }) metricTable: MetricTableComponent;
   @ViewChild("botWindow") botWindowElement: ElementRef;
 
   refreshInterval;
@@ -40,6 +38,7 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
   tab = "Totals";
   date = "";
   userID;
+  currentTime;
 
 
   private _routerSub = Subscription.EMPTY;
@@ -82,48 +81,34 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
   
   }
 
-  public filterDashboard(values) {
-    console.log(this.router.url)
-    var FilterValues = new Map();
-                    var PageFilter = new Map();
-                    for (var i = 0; i < values.length; i += 2) {
-                        if (values[i] == "Datum") {
-                            FilterValues.set(values[i], values[i + 1])
-                        }
-                        else if (FilterValues.get(values[i]) == undefined) {
-                            FilterValues.set(values[i], [values[i + 1]])
-                        }
-                        else {
-                            FilterValues.set(values[i], [values[i + 1], ...FilterValues.get(values[i])]);
-                        }
-
-                    }
-                    console.log(FilterValues)
-                    for (var [key, value] of FilterValues.entries()) {
-                      if(key == "States"){
-                        this.countiesMap.selectedState = value[0];
-                        this.metricSummary.selectedState = value;
-                      }
-                      if(key == "Datum"){
-                        if(value.includes("XXXX")){
-                          value = value.replace("XXXX", 2020)
-                        }
-                        this.countiesMap.date = value;
-                        this.metricSummary.date = value;
-                      }
-                      this.countiesMap.removeExistingMapFromParent();
-                      this.countiesMap.updateMap(true)
-                      this.metricSummary.updateSummary();
-                    }
-    this.router.navigateByUrl("/counties/" + this.countiesMap.selectedState + "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID );
+  ngOnDestroy() {
+    console.log("Destroy")
+    this.currentTime = new Date(8640000000000000);
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
   }
 
   public ngAfterViewInit(): void {
 
-    const directLine = window.WebChat.createDirectLine({
+    console.log(document.cookie)
+    console.log(this.getCookie("conversationID"))
+    this.currentTime = new Date()
+    if(document.cookie.includes("conversationID")){
+      console.log(new Date())
+      var conversationID = this.getCookie("conversationID")
+      var directLine = window.WebChat.createDirectLine({
+        secret: "Ye6XyojNens.RBOseW23O3THiyjuLJXpafIUmLzAS70KJRv2pono0_A",
+        conversationId: conversationID,
+        webSocket: false
+    });
+  }
+  else{
+    var directLine = window.WebChat.createDirectLine({
       secret: "Ye6XyojNens.RBOseW23O3THiyjuLJXpafIUmLzAS70KJRv2pono0_A",
       webSocket: false
-  });
+      });
+    }
 
   const webSpeechPonyfillFactory = window.WebChat.createCognitiveServicesSpeechServicesPonyfillFactory({
     credentials: {
@@ -186,7 +171,9 @@ const store = window.WebChat.createStore(
       );
 
       window.addEventListener('webchatincomingactivity', event => {
-        if ((<any>event).data.type == 'event' && this.router.url.includes("counties")) {
+        console.log(this.router.url)
+
+        if ((<any>event).data.type == 'event' && this.router.url.includes("counties") && (new Date((<any>event).data.timestamp) >= this.currentTime)) {
             console.log((<any>event).data)
 
             //display seed change by adding branch
@@ -197,6 +184,10 @@ const store = window.WebChat.createStore(
             else if ((<any>event).data.name == "DrillDown") {
               console.log((<any>event).data.value)
               this.filterDashboard((<any>event).data.value)
+          }
+          else if ((<any>event).data.name == "Overview"){
+            console.log((<any>event).data.value)
+              this.navigateLeft()
           }
         }
     });
@@ -216,12 +207,6 @@ const store = window.WebChat.createStore(
 
   }
 
-  ngOnDestroy() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
-  }
-
   ngAfterContentInit() {
     this.initialize();
   }
@@ -234,11 +219,60 @@ const store = window.WebChat.createStore(
     this.router.navigate(['/status']);
   }
 
-  dateChanged(date) {
-    if (date) {
-      this.metricSummary.date = date;
-      this.metricSummary.updateSummary();
+  dateChanged(data) {
+    if (data.date) {
+      this.metricSummary.date = data.date;
     }
+    if(data.metric){
+      this.metricSummary.selectedMetric = data.metric
+    }
+    this.metricSummary.updateSummary();
+  }
+
+  public filterDashboard(values) {
+    console.log(this.router.url)
+    var FilterValues = new Map();
+                    var PageFilter = new Map();
+                    for (var i = 0; i < values.length; i += 2) {
+                        if (values[i] == "Datum") {
+                            FilterValues.set(values[i], values[i + 1])
+                        }
+                        else if (FilterValues.get(values[i]) == undefined) {
+                            FilterValues.set(values[i], [values[i + 1]])
+                        }
+                        else {
+                            FilterValues.set(values[i], [values[i + 1], ...FilterValues.get(values[i])]);
+                        }
+
+                    }
+                    console.log(FilterValues)
+                    for (var [key, value] of FilterValues.entries()) {
+                      if(key == "States"){
+                        this.countiesMap.selectedState = value[0];
+                        this.metricSummary.selectedState = value;
+                      }
+                      if(key == "Datum"){
+                        if(value.includes("XXXX")){
+                          value = value.replace("XXXX", 2020)
+                        }
+                        this.countiesMap.date = value;
+                        this.metricSummary.date = value;
+                      }
+                      if(key == "Data"){
+                        this.countiesMap.metric = value;
+                        this.metricSummary.selectedMetric = value;
+                      }
+                      this.countiesMap.removeExistingMapFromParent();
+                      this.countiesMap.updateMap(false)
+                      this.metricSummary.updateSummary();
+                    }
+    this.router.navigateByUrl("/counties/" + this.countiesMap.selectedState + "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID );
+  }
+
+  public getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
   }
 }
 

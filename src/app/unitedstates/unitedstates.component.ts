@@ -1,13 +1,10 @@
 import { Component, OnInit, OnDestroy, AfterContentInit, ElementRef, AfterViewInit } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
-
 import { ViewChild } from '@angular/core';
-
 import { UnitedStatesMapComponent } from '../unitedstates-map/unitedstates-map.component';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MetricSummaryComponent } from '../metric-summary/metric-summary.component';
-import { MetricTableComponent } from '../metric-table/metric-table.component';
 
 /**
  * Declares the WebChat property on the window object.
@@ -29,12 +26,13 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterContentIni
 
   @ViewChild('unitedStatesMap', { static: true }) unitedStatesMap: UnitedStatesMapComponent;
   @ViewChild('metricSummary', { static: true }) metricSummary: MetricSummaryComponent;
-  @ViewChild('metricTable', { static: true }) metricTable: MetricTableComponent;
   @ViewChild("botWindow") botWindowElement: ElementRef;
 
   private _routerSub = Subscription.EMPTY;
   public metric = "Total Cases";
   public userID;
+  public currentTime;
+  public directLine;
   constructor(private router: Router, public route: ActivatedRoute) {
 
     this._routerSub = router.events.pipe(
@@ -60,24 +58,32 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterContentIni
   }
 
   ngOnDestroy() {
+    console.log("Destroy")
+    this.currentTime = new Date(8640000000000000);
   }
 
   public ngAfterViewInit(): void {
 
     console.log(document.cookie)
-  if(document.cookie == "hallo"){
-    var directLine = window.WebChat.createDirectLine({
+    console.log(this.getCookie("conversationID"))
+    this.currentTime = new Date()
+    if(document.cookie.includes("conversationID")){
+      console.log(new Date())
+      var conversationID = this.getCookie("conversationID")
+      this.directLine = window.WebChat.createDirectLine({
+        secret: "Ye6XyojNens.RBOseW23O3THiyjuLJXpafIUmLzAS70KJRv2pono0_A",
+        conversationId: conversationID,
+        webSocket: false
+    });
+  }
+  else{
+    this.directLine = window.WebChat.createDirectLine({
       secret: "Ye6XyojNens.RBOseW23O3THiyjuLJXpafIUmLzAS70KJRv2pono0_A",
-      conversationId: document.cookie,
       webSocket: false
-  });
-}
-else{
-  var directLine = window.WebChat.createDirectLine({
-    secret: "Ye6XyojNens.RBOseW23O3THiyjuLJXpafIUmLzAS70KJRv2pono0_A",
-    webSocket: false
-});
-}
+      });
+    }
+
+  
 
   const webSpeechPonyfillFactory = window.WebChat.createCognitiveServicesSpeechServicesPonyfillFactory({
     credentials: {
@@ -106,7 +112,7 @@ const store = window.WebChat.createStore(
 
   window.WebChat.renderWebChat(
       {
-          directLine: directLine,
+          directLine: this.directLine,
           styleOptions: {
                         botAvatarImage: '/css/owl.jpg',
                         botAvatarBackgroundColor: 'rgba(0, 0, 0)',
@@ -126,7 +132,7 @@ const store = window.WebChat.createStore(
       this.botWindowElement.nativeElement
   );
 
-  directLine
+  this.directLine
   .postActivity({
     from: { id: "USER_ID", name: "USER_NAME" },
     name: "requestWelcomeDialog",
@@ -134,13 +140,13 @@ const store = window.WebChat.createStore(
     value: "token"
 })
 .subscribe(
-    
-    id => {console.log(`Posted activity, assigned ID ${id}`); console.log(directLine.conversationId);},
+    id => {console.log(`Posted activity, assigned ID ${id}`); console.log(this.directLine.conversationId); if(!document.cookie.includes("conversationID")) {document.cookie = "conversationID=" + this.directLine.conversationId};},
     error => console.log(`Error posting activity ${error}`)
 );
 
 window.addEventListener('webchatincomingactivity', event => {
-        if ((<any>event).data.type == 'event' && this.router.url.includes("unitedstates")) {  //
+        console.log(this.router.url)
+        if ((<any>event).data.type == 'event' && (this.router.url.includes("unitedstates") || this.router.url == "/") && (new Date((<any>event).data.timestamp) >= this.currentTime)) {  //
             console.log((<any>event).data)
 
             //display seed change by adding branch
@@ -173,16 +179,55 @@ window.addEventListener('webchatincomingactivity', event => {
 
     if (data.date) {
       this.metricSummary.date = data.date;
-      //this.metricTable.date = data.date;
+    }
+
+    if (data.metric){
+      this.metricSummary.selectedMetric = data.metric;
     }
     this.metricSummary.updateSummary();
-    //this.metricTable.updateSummary();
 
 
   }
 
-  public drillDown(state){
-    this.unitedStatesMap.select(state[1])
+  public drillDown(values){
+    var state;
+    console.log(this.router.url)
+    var FilterValues = new Map();
+                    var PageFilter = new Map();
+                    for (var i = 0; i < values.length; i += 2) {
+                        if (values[i] == "Datum") {
+                            FilterValues.set(values[i], values[i + 1])
+                        }
+                        else if (FilterValues.get(values[i]) == undefined) {
+                            FilterValues.set(values[i], [values[i + 1]])
+                        }
+                        else {
+                            FilterValues.set(values[i], [values[i + 1], ...FilterValues.get(values[i])]);
+                        }
+
+                    }
+                    console.log(FilterValues)
+                    for (var [key, value] of FilterValues.entries()) {
+                      if(key == "States"){
+                        state = value
+                      }
+                      if(key == "Datum"){
+                        if(value.includes("XXXX")){
+                          value = value.replace("XXXX", 2020)
+                        }
+                        this.unitedStatesMap.date = value;
+                        this.metricSummary.date = value;
+                      }
+                      if(key == "Data"){
+                        this.unitedStatesMap.metric = value;
+                        this.metricSummary.selectedMetric = value;
+                      }
+                      this.unitedStatesMap.removeExistingMapFromParent();
+                      this.unitedStatesMap.updateMap()
+                      this.metricSummary.updateSummary();
+                    }
+                    this.router.navigate(['unitedstates/' + this.unitedStatesMap.metric + "/" + this.unitedStatesMap.date + "/" + this.unitedStatesMap.userID]);
+    this.unitedStatesMap.select(state)
   }
 
   public filterDashboard(values){
@@ -213,13 +258,24 @@ window.addEventListener('webchatincomingactivity', event => {
                         }
                         this.unitedStatesMap.date = value;
                         this.metricSummary.date = value;
-                        this.router.navigate(['unitedstates/' + this.metric + "/" + value + "/" + this.userID]);
+                      }
+                      if(key == "Data"){
+                        this.unitedStatesMap.metric = value;
+                        this.metricSummary.selectedMetric = value;
                       }
                       this.unitedStatesMap.removeExistingMapFromParent();
                       this.unitedStatesMap.updateMap()
                       this.metricSummary.updateSummary();
                     }
+                    this.router.navigate(['unitedstates/' + this.unitedStatesMap.metric + "/" + this.unitedStatesMap.date + "/" + this.unitedStatesMap.userID]);
 
+
+  }
+
+  public getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
   }
 }
 

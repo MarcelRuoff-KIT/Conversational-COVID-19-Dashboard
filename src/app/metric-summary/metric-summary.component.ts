@@ -1,11 +1,11 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import * as d3 from "d3";
-import * as statedata from "../data/states-historical.json";
 import coviddata from "../data/timeseries covid summary.json";
+import coviddataDeaths from "../data/timeseries covid deaths summary.json";
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
-import { TabStripTabComponent, TabStripComponent } from '@progress/kendo-angular-layout';
+import { TabStripComponent } from '@progress/kendo-angular-layout';
  
 
 @Component({
@@ -28,7 +28,7 @@ export class MetricSummaryComponent implements OnInit {
 
   date ;
   selectedState;
-  selectedTab = "Totals";
+  selectedMetric = "Total Cases";
 
   private _routerSub = Subscription.EMPTY;
 
@@ -46,21 +46,16 @@ export class MetricSummaryComponent implements OnInit {
           else {
             this.selectedState = 'United States';
           }
+
+          if (this.route.snapshot.params['selectedMetric']) {
+            this.selectedMetric = this.route.snapshot.params['selectedMetric'];
+          }
           
           if (this.route.snapshot.params['selectedDate']) {
             this.date = this.route.snapshot.params['selectedDate'];
           }
-
-          if (this.route.snapshot.params['selectedTab']) {
-            this.selectedTab = this.route.snapshot.params['selectedTab'];
-            switch (this.selectedTab) {
-              case "Totals":
-                this.tab.selectTab(0);
-                break;
-              case "Daily":
-                this.tab.selectTab(1);
-                break;
-            }
+          else {
+            this.date = "2020-12-02";
           }
 
         });
@@ -75,14 +70,19 @@ export class MetricSummaryComponent implements OnInit {
 
     that = this;
 
+    if(this.selectedMetric == "Total Cases") {
+      that.covid = coviddata.states;
+      }
+      else if(this.selectedMetric == "Total Deaths"){
+      that.covid = coviddataDeaths.states;
+    }
+
     if (this.selectedState == 'United States' || (Array.isArray(this.selectedState) && this.selectedState.length === 0)) {
-      this.covid = coviddata.states;
       this.covid = this.covid.filter(function (d) {
         return (new Date(d.date) <= new Date(that.date))
       });
     }
     else {
-      this.covid = coviddata.states;
       this.covid = this.covid.filter(function (d) {
         return (that.selectedState.includes(d.state) && new Date(d.date) <= new Date(that.date))
       });

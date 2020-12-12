@@ -1,8 +1,5 @@
 import { Component, ElementRef, OnInit,  NgZone, ViewEncapsulation, ViewChild } from '@angular/core';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
-import { trigger, transition, query, style, animate } from '@angular/animations';
-import { slideInAnimation } from './animation';
-import { DrawerSelectEvent } from '@progress/kendo-angular-layout';
 import { RouterOutlet } from '@angular/router';
 import { formatDate } from '@angular/common';
 import { Location } from '@angular/common';
@@ -21,9 +18,6 @@ import {
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  animations: [
-    slideInAnimation
-  ]
 })
 export class AppComponent implements OnInit {
   public selected;

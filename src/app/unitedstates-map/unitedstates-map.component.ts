@@ -22,6 +22,8 @@ import {
 
 import * as statesdata from "../data/states.json";
 import coviddataV2 from "../data/timeseries covid states.json";
+import coviddataV2deaths from "../data/time series covid death states.json";
+
 import * as d3 from "d3";
 
 import {
@@ -74,7 +76,9 @@ export class UnitedStatesMapComponent implements OnInit {
 
 
   public scaleButtons = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
-
+  public listItems: Array<string> = [
+        'Total Cases', 'Total Deaths'
+    ];
 
   centered;
 
@@ -257,7 +261,14 @@ export class UnitedStatesMapComponent implements OnInit {
 
     that.g = this.svg.append("g");
 
+    if(this.metric == "Total Cases") {
     that.covid = coviddataV2.states;
+    that.end = 900000;
+    }
+    else if(this.metric == "Total Deaths"){
+    that.covid = coviddataV2deaths.states;
+    that.end = 20000;
+  }
 
     // Slider values
     that.min = new Date(that.dateMin).getTime();
@@ -278,8 +289,9 @@ export class UnitedStatesMapComponent implements OnInit {
       this.location.go('unitedstates/' + this.metric + "/" + that.date + "/" + that.userID );
     }
     
-
-    that.states = statesdata.features;
+    
+      that.states = statesdata.features;
+    
 
     var currentMetric = that.metric;
     that.merged = that.join(that.covid, that.states, "State", "name", function (
@@ -287,14 +299,7 @@ export class UnitedStatesMapComponent implements OnInit {
       covid
     ) {
       var metric;
-      switch (currentMetric) {
-        case "Total Cases":
-          metric = covid ? covid[that.date] : 0;
-          break;
-        case "Total Deaths":
-          metric = covid ? covid.deaths : 0;
-          break;
-      }
+      metric = covid ? covid[that.date] : 0;
 
       return {
         name: state.properties.name,
@@ -542,19 +547,34 @@ export class UnitedStatesMapComponent implements OnInit {
   }
 
 
-  filterState(state) {
-    d3.select('path#Florida').dispatch('click');
-  }
-
-
   valueChange(e) {
     this.date = formatDate(new Date(this.value), 'yyyy-MM-dd', 'en');
     var data = { metric: this.metric, date: this.date, tab: this.tab, statesSelected: this.statesSelect}
-    this.location.go('unitedstates/' + this.metric + "/" + this.date);
+    this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID);
     this.drillDownService.date = this.date;
     this.dateChanged.emit(data);
     this.removeExistingMapFromParent();
     this.updateMap();
+  }
+
+  selectedMetricChange(value: any) {
+    console.log(value)
+    var data = { metric: this.metric, date: this.date, statesSelected: this.statesSelect}
+    this.dateChanged.emit(data);
+    this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID);
+    this.removeExistingMapFromParent()
+    this.updateMap();
+    /* 
+    this.scale = value;
+    this.location.go('unitedstates/' + this.type + '/' + this.scale + '/' + this.metric + "/" + this.date + "/" + this.tab);
+    this.drillDownService.date = this.date;
+    ;
+    */
+  }
+
+  
+  filterState(state) {
+    d3.select('path#Florida').dispatch('click');
   }
 
 

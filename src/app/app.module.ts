@@ -6,7 +6,6 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { UnitedStatesComponent } from './unitedstates/unitedstates.component';
 import { CountiesComponent } from './counties/counties.component';
-
 import { UnitedStatesMapComponent} from './unitedstates-map/unitedstates-map.component'
 import { CountiesMapComponent } from './counties-map/counties-map.component';
 
@@ -22,8 +21,6 @@ import 'hammerjs';
 import { DropDownsModule } from '@progress/kendo-angular-dropdowns';
 import { FormsModule } from '@angular/forms';
 import { GridModule } from '@progress/kendo-angular-grid';
-import { MetricTableComponent } from './metric-table/metric-table.component';
-
 
 
 
@@ -39,7 +36,6 @@ import { MetricTableComponent } from './metric-table/metric-table.component';
     CountiesComponent,
     CountiesMapComponent,
     MetricSummaryComponent,
-    MetricTableComponent
   ],
   imports: [
     BrowserModule,

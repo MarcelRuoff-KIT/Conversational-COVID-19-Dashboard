@@ -11,10 +11,21 @@
                     [min]="min"
                     [max]="max"
                     [smallStep]="smallStep"
+                    [value]="value"
+                    [(ngModel)]="value"
                     (valueChange)="valueChange($event)"></kendo-slider>
                   </kendo-label>
     </div>
-    <div class="col-md-3"></div>
+    <div class="col-md-3">
+      <p></p>
+      <kendo-combobox 
+          [data]="listItems" 
+          (valueChange)="selectedMetricChange($event)"
+          [(ngModel)]="metric"
+          [filterable] = "true">
+      </kendo-combobox>
+    </div>
+    
     <div class="col-md-6"></div>
   </div>
   <div class="row">

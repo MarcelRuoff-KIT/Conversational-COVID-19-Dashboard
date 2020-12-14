@@ -5,9 +5,7 @@
   </div>
 
   <div class="row">
-  
-
-    <div class="col-md-3">
+      <div class="col-md-3">
       <kendo-label text="Date:"class="float-right">&nbsp;
       <kendo-slider #slider [tickPlacement]="tickPlacement"
                     [min]="min"
@@ -40,11 +38,9 @@
           (valueChange)="selectedScaleChange($event)"
           [(ngModel)]="statesSelect"
           [popupSettings]="{ height: 66 }"
-          listHeight="66">
-                             
+          listHeight="66">        
         </kendo-multiselect>
         </kendo-label>
-
     </div>
   </div>
   <div class="row">

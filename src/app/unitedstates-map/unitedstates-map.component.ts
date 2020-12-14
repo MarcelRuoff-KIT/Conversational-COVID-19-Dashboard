@@ -3,9 +3,6 @@ import {
   OnInit,
   ElementRef,
   ViewEncapsulation,
-  Input,
-  SimpleChanges,
-  OnChanges,
   ChangeDetectorRef,
   ViewChild,
   EventEmitter,
@@ -34,18 +31,10 @@ import {
   NavigationEnd,
   ActivatedRoute
 } from "@angular/router";
-import {
-  tap,
-  catchError,
-  finalize,
-  filter,
-  delay
-} from "rxjs/operators";
-import {
-  DrillDownService
-} from "../shared/drilldown.services";
+import { filter } from "rxjs/operators";
+import { DrillDownService } from "../shared/drilldown.services";
 import { SliderComponent } from '@progress/kendo-angular-inputs';
-import { DropDownListComponent } from '@progress/kendo-angular-dropdowns';
+//import { DropDownListComponent } from '@progress/kendo-angular-dropdowns';
 
 
 @Component({
@@ -130,7 +119,6 @@ export class UnitedStatesMapComponent implements OnInit {
   date;
   dateMin = "2020-01-21";
   dateMax = "2020-12-02";
-  tab = "Totals";
   userID;
 
   sqrtScale;
@@ -220,6 +208,7 @@ export class UnitedStatesMapComponent implements OnInit {
   }
 
   updateMap() {
+    console.log("update STates")
     this.active = d3.select(null);
 
     this.projection = d3
@@ -293,7 +282,6 @@ export class UnitedStatesMapComponent implements OnInit {
       that.states = statesdata.features;
     
 
-    var currentMetric = that.metric;
     that.merged = that.join(that.covid, that.states, "State", "name", function (
       state,
       covid
@@ -336,7 +324,7 @@ export class UnitedStatesMapComponent implements OnInit {
       .enter()
       .append("path")
       .attr("d", that.path)
-      .attr("id", function(d) { return d.name ; })
+      .attr("id", function(d) { return d.name.replace(" ", "_") ; })
       .attr("class", "feature")
       .on("click", function (d) {
         that.clicked(d, that, this);
@@ -365,7 +353,7 @@ export class UnitedStatesMapComponent implements OnInit {
 
           that.tooltip
           .html(
-            d.name + "<br/><b>Total " + that.metric + ":</b> " + that.formatDecimal(d.metric)
+            d.name // + "<br/><b>Total " + that.metric + ":</b> " + that.formatDecimal(d.metric)
           )
           .style("left", d3.event.pageX + "px")
           .style("top", d3.event.pageY + "px");
@@ -538,18 +526,13 @@ export class UnitedStatesMapComponent implements OnInit {
     this.dateChanged.emit(data);
     this.removeExistingMapFromParent()
     this.updateMap();
-    /* 
-    this.scale = value;
-    this.location.go('unitedstates/' + this.type + '/' + this.scale + '/' + this.metric + "/" + this.date + "/" + this.tab);
-    this.drillDownService.date = this.date;
-    ;
-    */
+
   }
 
 
   valueChange(e) {
     this.date = formatDate(new Date(this.value), 'yyyy-MM-dd', 'en');
-    var data = { metric: this.metric, date: this.date, tab: this.tab, statesSelected: this.statesSelect}
+    var data = { metric: this.metric, date: this.date, statesSelected: this.statesSelect}
     this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID);
     this.drillDownService.date = this.date;
     this.dateChanged.emit(data);
@@ -559,24 +542,11 @@ export class UnitedStatesMapComponent implements OnInit {
 
   selectedMetricChange(value: any) {
     console.log(value)
+    this.metric = value
     var data = { metric: this.metric, date: this.date, statesSelected: this.statesSelect}
     this.dateChanged.emit(data);
     this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID);
     this.removeExistingMapFromParent()
     this.updateMap();
-    /* 
-    this.scale = value;
-    this.location.go('unitedstates/' + this.type + '/' + this.scale + '/' + this.metric + "/" + this.date + "/" + this.tab);
-    this.drillDownService.date = this.date;
-    ;
-    */
   }
-
-  
-  filterState(state) {
-    d3.select('path#Florida').dispatch('click');
-  }
-
-
-
 }

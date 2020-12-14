@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterContentInit, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, AfterViewInit } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { ViewChild } from '@angular/core';
 import { UnitedStatesMapComponent } from '../unitedstates-map/unitedstates-map.component';
@@ -22,11 +22,11 @@ window.WebChat = window.WebChat || {};
   templateUrl: './unitedstates.component.html',
   styleUrls: ['./unitedstates.component.scss']
 })
-export class UnitedStatesComponent implements OnInit, OnDestroy, AfterContentInit, AfterViewInit {
+export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @ViewChild('unitedStatesMap', { static: true }) unitedStatesMap: UnitedStatesMapComponent;
   @ViewChild('metricSummary', { static: true }) metricSummary: MetricSummaryComponent;
-  @ViewChild("botWindow") botWindowElement: ElementRef;
+  @ViewChild("botWindow", {static: true}) botWindowElement: ElementRef;
 
   private _routerSub = Subscription.EMPTY;
   public metric = "Total Cases";
@@ -54,21 +54,9 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterContentIni
 
   }
 
-  ngOnInit() {
-  }
-
-  ngOnDestroy() {
-    console.log("Destroy")
-    this.currentTime = new Date(8640000000000000);
-  }
-
-  public ngAfterViewInit(): void {
-
-    console.log(document.cookie)
-    console.log(this.getCookie("conversationID"))
+  async ngOnInit() {
     this.currentTime = new Date()
     if(document.cookie.includes("conversationID")){
-      console.log(new Date())
       var conversationID = this.getCookie("conversationID")
       this.directLine = window.WebChat.createDirectLine({
         secret: "Ye6XyojNens.RBOseW23O3THiyjuLJXpafIUmLzAS70KJRv2pono0_A",
@@ -83,7 +71,23 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterContentIni
       });
     }
 
-  
+    async function createHybridPonyfillFactory() {
+      const speechServicesPonyfillFactory = await window.WebChat.createCognitiveServicesSpeechServicesPonyfillFactory({ credentials: {
+        region: 'westus',
+        subscriptionKey: '55240fa205624ece8a53255dcba36df2'
+    } });
+
+      return (options) => {
+          const speech = speechServicesPonyfillFactory(options);
+
+          return {
+              SpeechGrammarList: speech.SpeechGrammarList,
+              SpeechRecognition: speech.SpeechRecognition,
+              speechSynthesis: null, // speech.speechSynthesis,
+              SpeechSynthesisUtterance: null, // speech.SpeechSynthesisUtterance
+          };
+      }
+  };
 
   const webSpeechPonyfillFactory = window.WebChat.createCognitiveServicesSpeechServicesPonyfillFactory({
     credentials: {
@@ -91,6 +95,8 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterContentIni
         subscriptionKey: '55240fa205624ece8a53255dcba36df2'
     }
 });
+
+
 
 const store = window.WebChat.createStore(
   {},
@@ -124,7 +130,7 @@ const store = window.WebChat.createStore(
                         bubbleMinHeight: 0,
                         userID: "USER_ID",
                     },
-                    webSpeechPonyfillFactory,
+                    webSpeechPonyfillFactory: await createHybridPonyfillFactory(),
                     locale: 'en-US', //en-US
                     store
 
@@ -140,12 +146,21 @@ const store = window.WebChat.createStore(
     value: "token"
 })
 .subscribe(
-    id => {console.log(`Posted activity, assigned ID ${id}`); console.log(this.directLine.conversationId); if(!document.cookie.includes("conversationID")) {document.cookie = "conversationID=" + this.directLine.conversationId};},
+    id => {console.log(`Posted activity, assigned ID ${id}`); if(!document.cookie.includes("conversationID")) {document.cookie = "conversationID=" + this.directLine.conversationId};},
     error => console.log(`Error posting activity ${error}`)
 );
+  }
 
-window.addEventListener('webchatincomingactivity', event => {
-        console.log(this.router.url)
+  ngOnDestroy() {
+    console.log("Destroy")
+    this.currentTime = new Date(8640000000000000);
+    this.directLine = null;
+  }
+
+  public ngAfterViewInit(): void {
+    
+
+    window.addEventListener('webchatincomingactivity', event => {
         if ((<any>event).data.type == 'event' && (this.router.url.includes("unitedstates") || this.router.url == "/") && (new Date((<any>event).data.timestamp) >= this.currentTime)) {  //
             console.log((<any>event).data)
 
@@ -161,14 +176,6 @@ window.addEventListener('webchatincomingactivity', event => {
         }
     });
 
-  }
-  ngAfterContentInit() {
-  }
-
-  navigateLeft() {
-  }
-
-  navigateRight() {
   }
 
   dateChanged(data) {
@@ -191,7 +198,6 @@ window.addEventListener('webchatincomingactivity', event => {
 
   public drillDown(values){
     var state;
-    console.log(this.router.url)
     var FilterValues = new Map();
                     var PageFilter = new Map();
                     for (var i = 0; i < values.length; i += 2) {
@@ -227,7 +233,7 @@ window.addEventListener('webchatincomingactivity', event => {
                       this.metricSummary.updateSummary();
                     }
                     this.router.navigate(['unitedstates/' + this.unitedStatesMap.metric + "/" + this.unitedStatesMap.date + "/" + this.unitedStatesMap.userID]);
-    this.unitedStatesMap.select(state)
+    this.unitedStatesMap.select(state[0].replace(" ", "_"))
   }
 
   public filterDashboard(values){

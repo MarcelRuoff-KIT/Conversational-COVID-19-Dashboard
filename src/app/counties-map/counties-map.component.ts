@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewEncapsulation, Input, SimpleChanges, OnChanges, ChangeDetectorRef, ViewChild, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewEncapsulation, ChangeDetectorRef, ViewChild, EventEmitter, Output } from '@angular/core';
 
 import countiesdata from "../data/counties.json";
 import * as coviddataV2 from "../data/timeseries covid county.json";
@@ -7,13 +7,10 @@ import * as d3 from 'd3';
 import * as topojson from 'topojson';
 import { Subscription } from 'rxjs';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
-import { tap, catchError, finalize, filter, delay } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 import { DrillDownService } from '../shared/drilldown.services';
-
 import { Location } from '@angular/common';
-import {
-  formatDate
-} from '@angular/common';
+import { formatDate } from '@angular/common';
 import { SliderComponent } from '@progress/kendo-angular-inputs';
 
 @Component({
@@ -90,8 +87,6 @@ export class CountiesMapComponent implements OnInit {
   numBars = 6;
   start = 1;
   end = 40000; //400000
-  scale = "Sqrrt";
-  type = "Filled";
   metric = "Total Cases";
   date;
   dateMin = "2020-01-21";
@@ -179,6 +174,7 @@ export class CountiesMapComponent implements OnInit {
 
 
   updateMap(performZoom) {
+    console.log("update Counties")
 
 
     this.active = d3.select(null);
@@ -213,8 +209,6 @@ export class CountiesMapComponent implements OnInit {
       .attr('width', this.width)
       .attr('height', this.height)
       .on('click', function (d) {
-        //  Don't zoom out when selecting rect
-        // that.reset(d, that);
       });
 
     //this.svg
@@ -250,7 +244,7 @@ export class CountiesMapComponent implements OnInit {
 
 
     that.covid.forEach(function(item){
-      that.covidSelected.push({"fips": item["fips"], "county": item["County"], "state": item["State"], "cases": item[that.date]});
+      that.covidSelected.push({"fips": item["fips"], "state": item["State"], "cases": item[that.date]}); //"county": item["County"], ,
     })
 
     // Get current date
@@ -263,14 +257,8 @@ export class CountiesMapComponent implements OnInit {
 
 
     if (that.selectedState != 'All') {
-      that.counties = that.counties.filter(function (d) 
-      { 
-        return true// d.properties.state === that.selectedState 
-      });
 
       var stateParameters = this.drillDownService.countiesMapped.find(stateElement => stateElement.State === that.selectedState)
-
-      console.log(stateParameters)
     
       this.drillDownService.scale = stateParameters.scale;
       if (that.selectedState == "Alaska" || that.selectedState == "Hawaii") {
@@ -294,8 +282,6 @@ export class CountiesMapComponent implements OnInit {
 
     }
 
-
-
     that.merged = that.join(that.covid, that.counties, "fips", "fips", function (county, covid) {
 
       var metric = covid ? covid.cases : 0;
@@ -310,9 +296,9 @@ export class CountiesMapComponent implements OnInit {
     });
 
     // Sort for bubble overlays
-    that.merged = that.merged.sort((a, b) => a.metric > b.metric ? - 1 : (a.metric < b.metric ? 1 : 0));
+    //that.merged = that.merged.sort((a, b) => a.metric > b.metric ? - 1 : (a.metric < b.metric ? 1 : 0));
 
-    // Sqrt Scale
+    // Initialize Scale (Squared-Scale)
     that.sqrtScale = d3.scaleSqrt().domain([that.start, that.end])
       .range([0, 1]);
 
@@ -342,8 +328,7 @@ export class CountiesMapComponent implements OnInit {
       .attr('stroke-width', 0.3)
       .attr('cursor', 'pointer')
       .attr('fill', function (d) {
-        var metric = d.metric;
-        var metric = metric ? metric : 0;
+        var metric = d.metric ? d.metric : 0;
         if (metric > 0) {
             return that.colorScaleSqrt(metric)
         }
@@ -351,19 +336,17 @@ export class CountiesMapComponent implements OnInit {
           return "#f2f2f2";
         }
       })
-      .on('click', function (d) {
-        that.clicked(d, that, this);
-      //  that.clicked(d, that);
-      })
+      //.on('click', function (d) {
+      //  that.clicked(d, that, this);
+      //})
       .on('mouseover', function (d) {
         that.tooltip.transition()
           .duration(200)
           .style('opacity', .9);
 
-        that.tooltip.html(d.name + '<br/><b>Total ' + that.metric + ':</b> ' + that.formatDecimal(d.metric))
+        that.tooltip.html(d.name ) //+ '<br/><b>Total ' + that.metric + ':</b> ' + that.formatDecimal(d.metric)
           .style('left', (d3.event.pageX) + 'px')
           .style('top', (d3.event.pageY) + 'px')
-
         that.changeDetectorRef.detectChanges();;
       })
       .on('mouseout', function (d) {
@@ -373,37 +356,6 @@ export class CountiesMapComponent implements OnInit {
 
         that.changeDetectorRef.detectChanges();;
       });
-
-    if (that.type == "Bubble") {
-      that.g
-        .attr("class", "bubble")
-        .selectAll('circle')
-        .data(that.merged)
-        .enter().append("circle")
-        .attr("transform", function (d) { return "translate(" + that.path.centroid(d) + ")"; })
-        .attr("r", function (d) {
-              return that.sqrtScale(d.metric)
-        })
-        .on('mouseover', function (d) {
-          that.tooltip.transition()
-            .duration(200)
-            .style('opacity', .9);
-
-          that.tooltip.html(d.name + '<br/><b>Total ' + this.metric + ':</b> ' + that.formatDecimal(d.metric))
-            .style('left', (d3.event.pageX) + 'px')
-            .style('top', (d3.event.pageY) + 'px')
-
-          that.changeDetectorRef.detectChanges();;
-        })
-        .on('mouseout', function (d) {
-          that.tooltip.transition()
-            .duration(300)
-            .style('opacity', 0);
-
-          that.changeDetectorRef.detectChanges();;
-        });
-
-    }
 
     that.legendContainer = that.svg.append('rect')
       .attr('x', that.legendContainerSettings.x)
@@ -419,7 +371,6 @@ export class CountiesMapComponent implements OnInit {
       .enter().append('g')
       .attr('class', 'legend');
 
-    if (that.type == 'Filled') {
       legend
         .append("rect")
         .attr("x", function (d, i) {
@@ -447,7 +398,7 @@ export class CountiesMapComponent implements OnInit {
         .text(function (d, i) {
           return that.legendLabels[i];
         });
-    }
+    
 
     legend
       .append("text")
@@ -472,13 +423,6 @@ export class CountiesMapComponent implements OnInit {
   reset(d, p) {
     p.active.classed("active", false);
     p.active = d3.select(null);
-
-    /*
-    p.svg.transition()
-      .duration(750)
-      // .call( zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1) ); // not in d3 v4
-      .call(p.zoom.transform, d3.zoomIdentity); // updated for d3 v4
-      */
   }
 
   // If the drag behavior prevents the default click,
@@ -489,7 +433,6 @@ export class CountiesMapComponent implements OnInit {
 
   zoomed(d, p) {
     p.g.style("stroke-width", 1.5 / d3.event.transform.k + "px");
-    // g.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")"); // not in d3 v4
     p.g.attr("transform", d3.event.transform); // updated for d3 v4
   }
 

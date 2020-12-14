@@ -28,7 +28,7 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
 
   @ViewChild('countiesMap', { static: true }) countiesMap: CountiesMapComponent;
   @ViewChild('metricSummary', { static: true }) metricSummary: MetricSummaryComponent;
-  @ViewChild("botWindow") botWindowElement: ElementRef;
+  @ViewChild("botWindow", {static: true}) botWindowElement: ElementRef;
 
   refreshInterval;
   selectedState = "United States";
@@ -77,20 +77,7 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
 
   }
 
-  ngOnInit() {
-  
-  }
-
-  ngOnDestroy() {
-    console.log("Destroy")
-    this.currentTime = new Date(8640000000000000);
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
-  }
-
-  public ngAfterViewInit(): void {
-
+  async ngOnInit() {
     console.log(document.cookie)
     console.log(this.getCookie("conversationID"))
     this.currentTime = new Date()
@@ -109,6 +96,24 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
       webSocket: false
       });
     }
+
+    async function createHybridPonyfillFactory() {
+      const speechServicesPonyfillFactory = await window.WebChat.createCognitiveServicesSpeechServicesPonyfillFactory({ credentials: {
+        region: 'westus',
+        subscriptionKey: '55240fa205624ece8a53255dcba36df2'
+    } });
+
+      return (options) => {
+          const speech = speechServicesPonyfillFactory(options);
+
+          return {
+              SpeechGrammarList: speech.SpeechGrammarList,
+              SpeechRecognition: speech.SpeechRecognition,
+              speechSynthesis: null, // speech.speechSynthesis,
+              SpeechSynthesisUtterance: null, // speech.SpeechSynthesisUtterance
+          };
+      }
+  };
 
   const webSpeechPonyfillFactory = window.WebChat.createCognitiveServicesSpeechServicesPonyfillFactory({
     credentials: {
@@ -149,7 +154,7 @@ const store = window.WebChat.createStore(
                         bubbleMinHeight: 0,
                         userID: "USER_ID",
                     },
-                    webSpeechPonyfillFactory,
+                    webSpeechPonyfillFactory: await createHybridPonyfillFactory(),
                     locale: 'en-US', //en-US
                     store
 
@@ -169,26 +174,31 @@ const store = window.WebChat.createStore(
           id => {console.log(`Posted activity, assigned ID ${id}`); console.log(directLine.conversationId);},
           error => console.log(`Error posting activity ${error}`)
       );
+  
+  }
+
+  ngOnDestroy() {
+    console.log("Destroy")
+    this.currentTime = new Date(8640000000000000);
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+  }
+
+  public ngAfterViewInit(): void {
 
       window.addEventListener('webchatincomingactivity', event => {
-        console.log(this.router.url)
-
         if ((<any>event).data.type == 'event' && this.router.url.includes("counties") && (new Date((<any>event).data.timestamp) >= this.currentTime)) {
-            console.log((<any>event).data)
 
-            //display seed change by adding branch
             if ((<any>event).data.name == "Filter") {
-                console.log((<any>event).data.value)
                 this.filterDashboard((<any>event).data.value)
             }
             else if ((<any>event).data.name == "DrillDown") {
-              console.log((<any>event).data.value)
               this.filterDashboard((<any>event).data.value)
-          }
-          else if ((<any>event).data.name == "Overview"){
-            console.log((<any>event).data.value)
+            }
+            else if ((<any>event).data.name == "Overview"){
               this.navigateLeft()
-          }
+            }
         }
     });
 
@@ -204,7 +214,6 @@ const store = window.WebChat.createStore(
       if (document.hasFocus()) {
       }
     }, 1000);
-
   }
 
   ngAfterContentInit() {
@@ -213,10 +222,6 @@ const store = window.WebChat.createStore(
 
   navigateLeft() {
     this.router.navigate(['/unitedstates' +  "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID]);
-  }
-
-  navigateRight() {
-    this.router.navigate(['/status']);
   }
 
   dateChanged(data) {
@@ -232,7 +237,6 @@ const store = window.WebChat.createStore(
   public filterDashboard(values) {
     console.log(this.router.url)
     var FilterValues = new Map();
-                    var PageFilter = new Map();
                     for (var i = 0; i < values.length; i += 2) {
                         if (values[i] == "Datum") {
                             FilterValues.set(values[i], values[i + 1])
@@ -274,5 +278,7 @@ const store = window.WebChat.createStore(
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
   }
+
+  
 }
 

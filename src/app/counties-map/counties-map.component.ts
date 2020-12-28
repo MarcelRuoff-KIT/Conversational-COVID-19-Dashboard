@@ -81,7 +81,7 @@ export class CountiesMapComponent implements OnInit {
   selectedState;
 
   public listItems: Array<string> = [
-    'Total Cases', 'Total Deaths'
+      'Total Cases', 'Total Deaths'
 ];
 
   numBars = 6;
@@ -92,6 +92,7 @@ export class CountiesMapComponent implements OnInit {
   dateMin = "2020-01-21";
   dateMax;
   userID;
+  treatment;
 
   sqrtScale;
   colorScaleSqrt;
@@ -136,6 +137,13 @@ export class CountiesMapComponent implements OnInit {
           this.userID = "0000000"
         }
 
+        if (this.route.snapshot.params['treatment']) {
+          this.treatment = this.route.snapshot.params['treatment'];
+        }
+        else{
+          this.treatment = "0";
+        }
+
 
         if (this.route.snapshot.params['selectedDate']) {
           this.date = this.route.snapshot.params['selectedDate'];
@@ -174,7 +182,7 @@ export class CountiesMapComponent implements OnInit {
 
 
   updateMap(performZoom) {
-    console.log("update Counties")
+    //console.log("update Counties")
 
 
     this.active = d3.select(null);
@@ -215,12 +223,11 @@ export class CountiesMapComponent implements OnInit {
     //.call(this.zoom); // delete this line to disable free zooming
 
     this.g = this.svg.append('g');
-    
-    if(this.metric == "Total Cases") {
+    if(this.metric == "Total Cases") { //Total Cases
       that.covid = coviddataV2["counties"];
       that.end = 40000;
       }
-    else if(this.metric == "Total Deaths"){
+    else if(this.metric == "Total Deaths"){ //Total Deaths
       that.covid = coviddataV2deaths["counties"];
       that.end = 500;
     }
@@ -239,7 +246,7 @@ export class CountiesMapComponent implements OnInit {
     if (that.date > that.max) {
       that.date = that.dateMax;
       that.value = that.max;
-      this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID);
+      this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID + '/' + this.treatment);
     }
 
 
@@ -406,7 +413,7 @@ export class CountiesMapComponent implements OnInit {
       .attr("y", that.legendContainerSettings.y + 14)
       .style("font-size", 14)
       .style("font-weight", "bold")
-      .text("COVID-19 " + this.metric + ' by County ');
+      .text("COVID-19 " + this.metric + ' by County '); //' by County '
 
   }
 
@@ -457,7 +464,7 @@ export class CountiesMapComponent implements OnInit {
     this.value = value;
     this.date = formatDate(new Date(this.value), 'yyyy-MM-dd', 'en');
     var data = { metric: this.metric, date: this.date}
-    this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID);
+    this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID + '/' + this.treatment);
     this.dateChanged.emit(data);
     this.removeExistingMapFromParent();
     this.updateMap(false);
@@ -466,7 +473,7 @@ export class CountiesMapComponent implements OnInit {
   selectedMetricChange(value: any) {
     this.metric = value;
     var data = { metric: this.metric, date: this.date}
-    this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID);
+    this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID  + '/' + this.treatment);
     this.dateChanged.emit(data);
     this.removeExistingMapFromParent();
     this.updateMap(false);

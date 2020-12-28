@@ -26,20 +26,24 @@
       </kendo-combobox>
     </div>
     <div class="col-md-6"   >
-      <kendo-label text="Scale:"class="float-right">&nbsp;
+      <kendo-label text="States:"class="float-right">&nbsp;
         <kendo-multiselect #scaleDropDown 
           [filterable] = "true"
           [data]="scaleButtons" 
-          valuePrimitive="true"
-          kendoMultiSelectSummaryTag
-          [clearButton]="false"
-          [autoClose]="false"
-          [placeholder]="'Select States...'"
-          (valueChange)="selectedScaleChange($event)"
-          [(ngModel)]="statesSelect"
-          [popupSettings]="{ height: 66 }"
-          listHeight="66">        
-        </kendo-multiselect>
+          [tagMapper]="tagMapper"
+        [clearButton]="false"
+        [autoClose]="false"
+        [placeholder]="'Select States...'"
+        (valueChange)="selectedScaleChange($event)"
+        [(ngModel)]="statesSelect"
+        [popupSettings]="{ height: 66 }"
+        listHeight="66"
+      >
+      <ng-template kendoMultiSelectGroupTagTemplate let-dataItems>
+          <span class="k-icon k-i-arrow-s"></span>
+          {{ dataItems.length }} State(s) selected
+        </ng-template>
+      </kendo-multiselect>
         </kendo-label>
     </div>
   </div>

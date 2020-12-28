@@ -1,6 +1,3 @@
-<kendo-tabstrip #tab  >
-  <kendo-tabstrip-tab [title]="'Totals'" [selected]="true">
-    <ng-template kendoTabContent>
       <div class="dashboard">
         <div class="card">
           <div class="card-body">
@@ -20,8 +17,8 @@
                                              categoryField="dateTime"
                                              aggregate="sum">
                       <kendo-chart-series-item-tooltip>
-                        <ng-template let-value="value" let-category="category">
-                          <span>{{category | date: 'shortDate'}}: {{value |  number:'1.0':'en-US' }}</span>
+                        <ng-template let-category="category">
+                          <span>{{category | date: 'shortDate'}}</span> <!--let-value="value"       : {{value |  number:'1.0':'en-US' }}-->
                         </ng-template>
                       </kendo-chart-series-item-tooltip>
                     </kendo-chart-series-item>
@@ -45,6 +42,3 @@
           </div>
         </div>
       </div>
-    </ng-template>
-  </kendo-tabstrip-tab>
-</kendo-tabstrip>

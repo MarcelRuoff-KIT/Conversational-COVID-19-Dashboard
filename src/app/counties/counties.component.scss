@@ -110,3 +110,34 @@
   background: #0D5277;
 }
 
+.k-icon-30 {
+  font-size: 300%;
+}
+
+.popup-overlay {
+  /*Hides pop-up when there is no "active" class*/
+  visibility: hidden;
+  position: absolute;
+  background-color: #8080808f;
+  border: 3px solid #666666;
+  height: 100%;
+  width: 100%;
+  top: 0px;
+  z-index: 4;
+}
+
+.popup-overlay.active {
+  /*displays pop-up when "active" class is present*/
+  visibility: visible;
+  text-align: center;
+}
+
+.popup-content {
+  /*Hides pop-up content when there is no "active" class */
+  visibility: hidden;
+}
+
+.popup-content.active {
+  /*Shows pop-up content when "active" class is present */
+  visibility: visible;
+}

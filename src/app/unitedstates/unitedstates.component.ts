@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, AfterViewInit, AfterContentInit } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { ViewChild } from '@angular/core';
 import { UnitedStatesMapComponent } from '../unitedstates-map/unitedstates-map.component';
@@ -22,7 +22,7 @@ window.WebChat = window.WebChat || {};
   templateUrl: './unitedstates.component.html',
   styleUrls: ['./unitedstates.component.scss']
 })
-export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit {
+export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, AfterContentInit {
 
   @ViewChild('unitedStatesMap', { static: true }) unitedStatesMap: UnitedStatesMapComponent;
   @ViewChild('metricSummary', { static: true }) metricSummary: MetricSummaryComponent;
@@ -33,6 +33,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit {
   public userID;
   public currentTime;
   public directLine;
+  public treatment;
   constructor(private router: Router, public route: ActivatedRoute) {
 
     this._routerSub = router.events.pipe(
@@ -49,24 +50,32 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit {
         else{
           this.userID = "0000000";
         }
+
+        if (this.route.snapshot.params['treatment']) {
+          this.treatment = this.route.snapshot.params['treatment'];
+        }
+        else{
+          this.treatment = "0";
+        }
       });
     });
 
   }
 
   async ngOnInit() {
+    //console.log(document.cookie)
     this.currentTime = new Date()
     if(document.cookie.includes("conversationID")){
       var conversationID = this.getCookie("conversationID")
       this.directLine = window.WebChat.createDirectLine({
-        secret: "Ye6XyojNens.RBOseW23O3THiyjuLJXpafIUmLzAS70KJRv2pono0_A",
+        secret: "gRcPqKxRTUc.TC9nxY9t2jvUxfDA0x9Z7pm4hXsGUly5IT9GQNJ_npI",
         conversationId: conversationID,
         webSocket: false
     });
   }
   else{
     this.directLine = window.WebChat.createDirectLine({
-      secret: "Ye6XyojNens.RBOseW23O3THiyjuLJXpafIUmLzAS70KJRv2pono0_A",
+      secret: "gRcPqKxRTUc.TC9nxY9t2jvUxfDA0x9Z7pm4hXsGUly5IT9GQNJ_npI",
       webSocket: false
       });
     }
@@ -120,7 +129,6 @@ const store = window.WebChat.createStore(
       {
           directLine: this.directLine,
           styleOptions: {
-                        botAvatarImage: '/css/owl.jpg',
                         botAvatarBackgroundColor: 'rgba(0, 0, 0)',
                         hideUploadButton: true,
                         bubbleBackground: 'rgba(0, 0, 255, .1)',
@@ -128,10 +136,10 @@ const store = window.WebChat.createStore(
                         sendBoxButtonColor: 'rgba(255,153, 0, 1)',
                         hideScrollToEndButton: true,
                         bubbleMinHeight: 0,
-                        userID: "USER_ID",
+                        bubbleMaxWidth: 600,
                     },
                     webSpeechPonyfillFactory: await createHybridPonyfillFactory(),
-                    locale: 'en-US', //en-US
+                    locale: 'en-US', //de-DE
                     store
 
       },
@@ -146,36 +154,68 @@ const store = window.WebChat.createStore(
     value: "token"
 })
 .subscribe(
-    id => {console.log(`Posted activity, assigned ID ${id}`); if(!document.cookie.includes("conversationID")) {document.cookie = "conversationID=" + this.directLine.conversationId};},
+    id => {//console.log(`Posted activity, assigned ID ${id}`); 
+            if(!document.cookie.includes("conversationID")) {
+              document.cookie = "conversationID=" + this.directLine.conversationId + "; SameSite=None; Secure"
+            };},
     error => console.log(`Error posting activity ${error}`)
 );
-  }
+
+}
 
   ngOnDestroy() {
-    console.log("Destroy")
+    //console.log("Destroy")
     this.currentTime = new Date(8640000000000000);
     this.directLine = null;
   }
 
   public ngAfterViewInit(): void {
+    this.router.navigate(['unitedstates/' + this.unitedStatesMap.metric + "/" + this.unitedStatesMap.date + "/" + this.unitedStatesMap.userID + "/" + this.unitedStatesMap.treatment])
+
     
 
     window.addEventListener('webchatincomingactivity', event => {
+      var sheight = document.querySelectorAll("[class$=webchat__basic-transcript__scrollable]")[0].scrollHeight;
+      document.querySelectorAll("[class$=webchat__basic-transcript__scrollable]")[0].scrollTo(0, sheight);
         if ((<any>event).data.type == 'event' && (this.router.url.includes("unitedstates") || this.router.url == "/") && (new Date((<any>event).data.timestamp) >= this.currentTime)) {  //
-            console.log((<any>event).data)
+            //console.log((<any>event).data)
 
             //display seed change by adding branch
             if ((<any>event).data.name == "Filter") {
-                console.log((<any>event).data.value)
+                //console.log((<any>event).data.value)
                 this.filterDashboard((<any>event).data.value)
             }
             else if ((<any>event).data.name == "DrillDown") {
-              console.log((<any>event).data.value)
+              //console.log((<any>event).data.value)
               this.drillDown((<any>event).data.value)
           }
         }
     });
 
+    document.getElementById("overlay").addEventListener("click", function() {
+      $(".popup-overlay, .popup-content").removeClass("active");
+    });
+
+    document.getElementById("content").addEventListener("click", function() {
+      $(".popup-overlay, .popup-content").removeClass("active");
+    });
+
+  }
+
+  public ngAfterContentInit() {
+    switch(this.treatment) {
+      case '0':
+        //console.log("Treatment: " + this.treatment)
+        break;
+      case '1':
+        //console.log("Treatment: " + this.treatment)
+        document.getElementById("hallo").style.zIndex = '2';
+        break;
+      case '2':
+        //console.log("Treatment: " + this.treatment)
+        document.getElementById("botWin").style.display = 'none';
+        break;
+    }
   }
 
   dateChanged(data) {
@@ -212,7 +252,7 @@ const store = window.WebChat.createStore(
                         }
 
                     }
-                    console.log(FilterValues)
+                    //console.log(FilterValues)
                     for (var [key, value] of FilterValues.entries()) {
                       if(key == "States"){
                         state = value
@@ -232,12 +272,12 @@ const store = window.WebChat.createStore(
                       this.unitedStatesMap.updateMap()
                       this.metricSummary.updateSummary();
                     }
-                    this.router.navigate(['unitedstates/' + this.unitedStatesMap.metric + "/" + this.unitedStatesMap.date + "/" + this.unitedStatesMap.userID]);
+                    this.router.navigate(['unitedstates/' + this.unitedStatesMap.metric + "/" + this.unitedStatesMap.date + "/" + this.unitedStatesMap.userID + "/" + this.unitedStatesMap.treatment]);
     this.unitedStatesMap.select(state[0].replace(" ", "_"))
   }
 
   public filterDashboard(values){
-    console.log(this.router.url)
+    //console.log(this.router.url)
     var FilterValues = new Map();
                     var PageFilter = new Map();
                     for (var i = 0; i < values.length; i += 2) {
@@ -252,13 +292,11 @@ const store = window.WebChat.createStore(
                         }
 
                     }
-                    console.log(FilterValues)
+                    //console.log(FilterValues)
+                    var flag = false
                     for (var [key, value] of FilterValues.entries()) {
-                      if(key == "States"){
-                        this.unitedStatesMap.statesSelect = value;
-                        this.metricSummary.selectedState = value;
-                      }
                       if(key == "Datum"){
+                        flag = true
                         if(value.includes("XXXX")){
                           value = value.replace("XXXX", 2020)
                         }
@@ -266,16 +304,34 @@ const store = window.WebChat.createStore(
                         this.metricSummary.date = value;
                       }
                       if(key == "Data"){
+                        flag = true;
                         this.unitedStatesMap.metric = value;
                         this.metricSummary.selectedMetric = value;
                       }
-                      this.unitedStatesMap.removeExistingMapFromParent();
-                      this.unitedStatesMap.updateMap()
-                      this.metricSummary.updateSummary();
                     }
-                    this.router.navigate(['unitedstates/' + this.unitedStatesMap.metric + "/" + this.unitedStatesMap.date + "/" + this.unitedStatesMap.userID]);
+                    if(flag){
+                      this.router.navigate(['unitedstates/' + this.unitedStatesMap.metric + "/" + this.unitedStatesMap.date + "/" + this.unitedStatesMap.userID + "/" + this.unitedStatesMap.treatment]);
+                    }
+                    for (var [key, value] of FilterValues.entries()) {
+                      if(key == "States"){
+                        this.unitedStatesMap.statesSelect = value;
+                        this.metricSummary.selectedState = value;
+                      }
+                    }
+                    this.unitedStatesMap.removeExistingMapFromParent();
+                    this.unitedStatesMap.updateMap()
+                    this.metricSummary.updateSummary();
+                    
 
 
+  }
+
+  openInfo() {
+    $(".popup-overlay, .popup-content").addClass("active");
+  }
+
+  closeInfo() {
+    $(".popup-overlay, .popup-content").removeClass("active");
   }
 
   public getCookie(name) {

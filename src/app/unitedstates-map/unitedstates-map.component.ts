@@ -6,7 +6,8 @@ import {
   ChangeDetectorRef,
   ViewChild,
   EventEmitter,
-  Output
+  Output,
+  Input
 } from "@angular/core";
 
 import {
@@ -66,8 +67,8 @@ export class UnitedStatesMapComponent implements OnInit {
 
   public scaleButtons = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
   public listItems: Array<string> = [
-        'Total Cases', 'Total Deaths'
-    ];
+    'Total Cases', 'Total Deaths'
+    ]; //'Gesamte Fälle', 'Gesamte Tote'
 
   centered;
 
@@ -115,6 +116,7 @@ export class UnitedStatesMapComponent implements OnInit {
 
   statesSelect = [];
 
+  treatment;
   metric = "Total Cases";
   date;
   dateMin = "2020-01-21";
@@ -163,6 +165,13 @@ export class UnitedStatesMapComponent implements OnInit {
             this.userID = "0000000"
           }
 
+          if (this.route.snapshot.params['treatment']) {
+            this.treatment = this.route.snapshot.params['treatment'];
+          }
+          else{
+            this.treatment = "0";
+          }
+
           if (this.route.snapshot.params['selectedMetric']) {
             this.metric = this.route.snapshot.params['selectedMetric'];
           }
@@ -177,7 +186,7 @@ export class UnitedStatesMapComponent implements OnInit {
           else {
             this.date = formatDate(new Date().setDate(new Date().getDate() - 1), 'yyyy-MM-dd', 'en');
           }
-
+           
           if (this.router.url.indexOf('/unitedstates') != -1 || this.router.url === "/") {
             this.removeExistingMapFromParent();
             this.updateMap();
@@ -185,7 +194,7 @@ export class UnitedStatesMapComponent implements OnInit {
 
           // Go to homepage default
           if (this.router.url === "/") {
-            this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID );
+            this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID + "/" + this.treatment );
           }
 
 
@@ -194,7 +203,6 @@ export class UnitedStatesMapComponent implements OnInit {
   }
 
   ngOnInit() {
- 
   }
 
   public removeExistingMapFromParent() {
@@ -208,7 +216,8 @@ export class UnitedStatesMapComponent implements OnInit {
   }
 
   updateMap() {
-    console.log("update STates")
+    //console.log(this.statesSelect)
+    //console.log("update STates")
     this.active = d3.select(null);
 
     this.projection = d3
@@ -250,11 +259,11 @@ export class UnitedStatesMapComponent implements OnInit {
 
     that.g = this.svg.append("g");
 
-    if(this.metric == "Total Cases") {
+    if(this.metric == "Total Cases") { //Total Cases
     that.covid = coviddataV2.states;
     that.end = 900000;
     }
-    else if(this.metric == "Total Deaths"){
+    else if(this.metric == "Total Deaths"){ //Total Deaths
     that.covid = coviddataV2deaths.states;
     that.end = 20000;
   }
@@ -275,7 +284,7 @@ export class UnitedStatesMapComponent implements OnInit {
     if (that.date > that.dateMax) {
       that.date = that.dateMax;
       that.value = that.max;
-      this.location.go('unitedstates/' + this.metric + "/" + that.date + "/" + that.userID );
+      this.location.go('unitedstates/' + this.metric + "/" + that.date + "/" + that.userID + "/" + this.treatment);
     }
     
     
@@ -419,7 +428,7 @@ export class UnitedStatesMapComponent implements OnInit {
       .attr("x", that.legendContainerSettings.x + 13)
       .attr("y", that.legendContainerSettings.y + 14)
       .style("font-size", 14)
-      .text("COVID-19 " + that.metric + " by State ");
+      .text("COVID-19 " + that.metric + " by State"); //" by State "
 
   }
 
@@ -487,7 +496,7 @@ export class UnitedStatesMapComponent implements OnInit {
 
     var stateParameters = this.drillDownService.countiesMapped.find(stateElement => stateElement.State === state)
 
-    console.log(stateParameters)
+    //console.log(stateParameters)
     
     this.drillDownService.scale = stateParameters.scale;
     if (state == "Alaska" || state == "Hawaii") {
@@ -498,7 +507,7 @@ export class UnitedStatesMapComponent implements OnInit {
       this.drillDownService.y = stateParameters.y;
     }
     
-    this.router.navigateByUrl("/counties/" + state + "/" + metric + "/" + date + "/" + this.userID );
+    this.router.navigateByUrl("/counties/" + state + "/" + metric + "/" + date + "/" + this.userID + "/" + this.treatment);
   }
 
   join(lookupTable, mainTable, lookupKey, mainKey, select) {
@@ -521,7 +530,7 @@ export class UnitedStatesMapComponent implements OnInit {
   }
 
   selectedScaleChange(value: any) {
-    console.log(value)
+    //console.log(value)
     var data = { metric: this.metric, date: this.date, statesSelected: this.statesSelect}
     this.dateChanged.emit(data);
     this.removeExistingMapFromParent()
@@ -533,7 +542,7 @@ export class UnitedStatesMapComponent implements OnInit {
   valueChange(e) {
     this.date = formatDate(new Date(this.value), 'yyyy-MM-dd', 'en');
     var data = { metric: this.metric, date: this.date, statesSelected: this.statesSelect}
-    this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID);
+    this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID + "/" + this.treatment);
     this.drillDownService.date = this.date;
     this.dateChanged.emit(data);
     this.removeExistingMapFromParent();
@@ -541,12 +550,16 @@ export class UnitedStatesMapComponent implements OnInit {
   }
 
   selectedMetricChange(value: any) {
-    console.log(value)
+    //console.log(value)
     this.metric = value
     var data = { metric: this.metric, date: this.date, statesSelected: this.statesSelect}
     this.dateChanged.emit(data);
-    this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID);
+    this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID + "/" + this.treatment);
     this.removeExistingMapFromParent()
     this.updateMap();
   }
+
+  public tagMapper(tags: any[]): any[] {
+    return tags.length < 3 ? tags : [tags];
+}
 }

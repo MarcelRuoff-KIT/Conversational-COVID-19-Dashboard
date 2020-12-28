@@ -112,7 +112,11 @@
               },
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+              {
+                "input": "node_modules/jquery/dist/jquery.min.js"
+              }
+            ]
           }
         },
         "lint": {

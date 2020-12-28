@@ -2,7 +2,7 @@
 
 ![GitHub Preview](/images/info.jpg)
 
-Click [here](https://interactive-analytics.org/covid-map/) to view the demo app.
+Click [here](https://interactive-analytics.org/covid-map-DE/) to view the demo app.
 
 ## Main Dependencies
 
@@ -18,4 +18,4 @@ Run the following to prevent memory errors
 node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng serve  
 
 ## To deploy
-node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng deploy --base-href=https://jcbowyer.github.io/d3-in-angular/
+node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng build --base-href /covid-map-DE/ --prod --optimization

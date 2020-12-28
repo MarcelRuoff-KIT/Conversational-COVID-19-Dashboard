@@ -7,6 +7,7 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { CountiesMapComponent } from '../counties-map/counties-map.component';
 import { MetricSummaryComponent } from '../metric-summary/metric-summary.component';
+import * as $ from "jquery";
 
 /**
  * Declares the WebChat property on the window object.
@@ -31,6 +32,7 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
   @ViewChild("botWindow", {static: true}) botWindowElement: ElementRef;
 
   refreshInterval;
+  treatment;
   selectedState = "United States";
   metric = "Cases";
   scale = "Sqrrt";
@@ -70,6 +72,13 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
             this.userID = "0000000"
           }
 
+          if (this.route.snapshot.params['treatment']) {
+            this.treatment = this.route.snapshot.params['treatment'];
+          }
+          else{
+            this.treatment = "0";
+          }
+
         });
 
       });
@@ -78,21 +87,21 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
   }
 
   async ngOnInit() {
-    console.log(document.cookie)
-    console.log(this.getCookie("conversationID"))
+    //console.log("Cookie: " + document.cookie)
+    //console.log(this.getCookie("conversationID"))
     this.currentTime = new Date()
     if(document.cookie.includes("conversationID")){
-      console.log(new Date())
+      //console.log(new Date())
       var conversationID = this.getCookie("conversationID")
       var directLine = window.WebChat.createDirectLine({
-        secret: "Ye6XyojNens.RBOseW23O3THiyjuLJXpafIUmLzAS70KJRv2pono0_A",
+        secret: "gRcPqKxRTUc.TC9nxY9t2jvUxfDA0x9Z7pm4hXsGUly5IT9GQNJ_npI",
         conversationId: conversationID,
         webSocket: false
     });
   }
   else{
     var directLine = window.WebChat.createDirectLine({
-      secret: "Ye6XyojNens.RBOseW23O3THiyjuLJXpafIUmLzAS70KJRv2pono0_A",
+      secret: "gRcPqKxRTUc.TC9nxY9t2jvUxfDA0x9Z7pm4hXsGUly5IT9GQNJ_npI",
       webSocket: false
       });
     }
@@ -144,7 +153,6 @@ const store = window.WebChat.createStore(
       {
           directLine: directLine,
           styleOptions: {
-                        botAvatarImage: '/css/owl.jpg',
                         botAvatarBackgroundColor: 'rgba(0, 0, 0)',
                         hideUploadButton: true,
                         bubbleBackground: 'rgba(0, 0, 255, .1)',
@@ -152,10 +160,10 @@ const store = window.WebChat.createStore(
                         sendBoxButtonColor: 'rgba(255,153, 0, 1)',
                         hideScrollToEndButton: true,
                         bubbleMinHeight: 0,
-                        userID: "USER_ID",
+                        bubbleMaxWidth: 600,
                     },
                     webSpeechPonyfillFactory: await createHybridPonyfillFactory(),
-                    locale: 'en-US', //en-US
+                    locale: 'de-DE', //en-US
                     store
 
       },
@@ -171,14 +179,15 @@ const store = window.WebChat.createStore(
       })
       .subscribe(
           
-          id => {console.log(`Posted activity, assigned ID ${id}`); console.log(directLine.conversationId);},
+          id => {//console.log(`Posted activity, assigned ID ${id}`); console.log(directLine.conversationId);
+        },
           error => console.log(`Error posting activity ${error}`)
       );
   
   }
 
   ngOnDestroy() {
-    console.log("Destroy")
+    //console.log("Destroy")
     this.currentTime = new Date(8640000000000000);
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
@@ -202,6 +211,14 @@ const store = window.WebChat.createStore(
         }
     });
 
+    document.getElementById("overlay").addEventListener("click", function() {
+      $(".popup-overlay, .popup-content").removeClass("active");
+    });
+
+    document.getElementById("content").addEventListener("click", function() {
+      $(".popup-overlay, .popup-content").removeClass("active");
+    });
+
   }
 
 
@@ -221,7 +238,15 @@ const store = window.WebChat.createStore(
   }
 
   navigateLeft() {
-    this.router.navigate(['/unitedstates' +  "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID]);
+    this.router.navigate(['/unitedstates' +  "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID  + '/' + this.treatment]);
+  }
+
+  openInfo() {
+    $(".popup-overlay, .popup-content").addClass("active");
+  }
+
+  closeInfo() {
+    $(".popup-overlay, .popup-content").removeClass("active");
   }
 
   dateChanged(data) {
@@ -235,7 +260,7 @@ const store = window.WebChat.createStore(
   }
 
   public filterDashboard(values) {
-    console.log(this.router.url)
+    //console.log(this.router.url)
     var FilterValues = new Map();
                     for (var i = 0; i < values.length; i += 2) {
                         if (values[i] == "Datum") {
@@ -249,7 +274,7 @@ const store = window.WebChat.createStore(
                         }
 
                     }
-                    console.log(FilterValues)
+                    //console.log(FilterValues)
                     for (var [key, value] of FilterValues.entries()) {
                       if(key == "States"){
                         this.countiesMap.selectedState = value[0];
@@ -270,7 +295,7 @@ const store = window.WebChat.createStore(
                       this.countiesMap.updateMap(false)
                       this.metricSummary.updateSummary();
                     }
-    this.router.navigateByUrl("/counties/" + this.countiesMap.selectedState + "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID );
+    this.router.navigateByUrl("/counties/" + this.countiesMap.selectedState + "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID  + '/' + this.treatment);
   }
 
   public getCookie(name) {

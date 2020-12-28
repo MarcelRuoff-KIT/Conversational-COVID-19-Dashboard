@@ -21,7 +21,7 @@ import { ChartsModule } from '@progress/kendo-angular-charts';
 import { DropDownsModule } from '@progress/kendo-angular-dropdowns';
 import { FormsModule } from '@angular/forms';
 //import { GridModule } from '@progress/kendo-angular-grid';
-
+declare var $: any;
 
 
 

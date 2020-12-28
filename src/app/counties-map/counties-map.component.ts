@@ -81,8 +81,7 @@ export class CountiesMapComponent implements OnInit {
   selectedState;
 
   public listItems: Array<string> = [
-    'Gesamte Fälle', 'Gesamte Tote'
-    //'Total Cases', 'Total Deaths'
+      'Total Cases', 'Total Deaths'
 ];
 
   numBars = 6;
@@ -224,11 +223,11 @@ export class CountiesMapComponent implements OnInit {
     //.call(this.zoom); // delete this line to disable free zooming
 
     this.g = this.svg.append('g');
-    if(this.metric == "Gesamte Fälle") { //Total Cases
+    if(this.metric == "Total Cases") { //Total Cases
       that.covid = coviddataV2["counties"];
       that.end = 40000;
       }
-    else if(this.metric == "Gesamte Tote"){ //Total Deaths
+    else if(this.metric == "Total Deaths"){ //Total Deaths
       that.covid = coviddataV2deaths["counties"];
       that.end = 500;
     }
@@ -414,7 +413,7 @@ export class CountiesMapComponent implements OnInit {
       .attr("y", that.legendContainerSettings.y + 14)
       .style("font-size", 14)
       .style("font-weight", "bold")
-      .text("COVID-19 " + this.metric + ' nach Bezirk'); //' by County '
+      .text("COVID-19 " + this.metric + ' by County '); //' by County '
 
   }
 

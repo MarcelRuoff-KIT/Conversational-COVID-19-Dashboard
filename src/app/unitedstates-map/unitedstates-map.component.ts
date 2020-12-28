@@ -67,8 +67,8 @@ export class UnitedStatesMapComponent implements OnInit {
 
   public scaleButtons = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
   public listItems: Array<string> = [
-        'Gesamte Fälle', 'Gesamte Tote'
-    ]; //'Total Cases', 'Total Deaths'
+    'Total Cases', 'Total Deaths'
+    ]; //'Gesamte Fälle', 'Gesamte Tote'
 
   centered;
 
@@ -117,7 +117,7 @@ export class UnitedStatesMapComponent implements OnInit {
   statesSelect = [];
 
   treatment;
-  metric = "Gesamte Fälle";
+  metric = "Total Cases";
   date;
   dateMin = "2020-01-21";
   dateMax = "2020-12-02";
@@ -259,11 +259,11 @@ export class UnitedStatesMapComponent implements OnInit {
 
     that.g = this.svg.append("g");
 
-    if(this.metric == "Gesamte Fälle") { //Total Cases
+    if(this.metric == "Total Cases") { //Total Cases
     that.covid = coviddataV2.states;
     that.end = 900000;
     }
-    else if(this.metric == "Gesamte Tote"){ //Total Deaths
+    else if(this.metric == "Total Deaths"){ //Total Deaths
     that.covid = coviddataV2deaths.states;
     that.end = 20000;
   }
@@ -428,7 +428,7 @@ export class UnitedStatesMapComponent implements OnInit {
       .attr("x", that.legendContainerSettings.x + 13)
       .attr("y", that.legendContainerSettings.y + 14)
       .style("font-size", 14)
-      .text("COVID-19 " + that.metric + " nach Bundesstaat "); //" by State "
+      .text("COVID-19 " + that.metric + " by State"); //" by State "
 
   }
 

@@ -139,7 +139,7 @@ const store = window.WebChat.createStore(
                         bubbleMaxWidth: 600,
                     },
                     webSpeechPonyfillFactory: await createHybridPonyfillFactory(),
-                    locale: 'de-DE', //en-US
+                    locale: 'en-US', //de-DE
                     store
 
       },

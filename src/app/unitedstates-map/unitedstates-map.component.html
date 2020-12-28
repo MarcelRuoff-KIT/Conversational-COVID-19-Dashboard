@@ -6,7 +6,7 @@
 
   <div class="row">
       <div class="col-md-3">
-      <kendo-label text="Datum:"class="float-right">&nbsp;
+      <kendo-label text="Date:"class="float-right">&nbsp;
       <kendo-slider #slider [tickPlacement]="tickPlacement"
                     [min]="min"
                     [max]="max"
@@ -26,14 +26,14 @@
       </kendo-combobox>
     </div>
     <div class="col-md-6"   >
-      <kendo-label text="Staat:"class="float-right">&nbsp;
+      <kendo-label text="States:"class="float-right">&nbsp;
         <kendo-multiselect #scaleDropDown 
           [filterable] = "true"
           [data]="scaleButtons" 
           [tagMapper]="tagMapper"
         [clearButton]="false"
         [autoClose]="false"
-        [placeholder]="'Wähle Staaten aus...'"
+        [placeholder]="'Select States...'"
         (valueChange)="selectedScaleChange($event)"
         [(ngModel)]="statesSelect"
         [popupSettings]="{ height: 66 }"
@@ -41,7 +41,7 @@
       >
       <ng-template kendoMultiSelectGroupTagTemplate let-dataItems>
           <span class="k-icon k-i-arrow-s"></span>
-          {{ dataItems.length }} Staat(en) ausgewählt
+          {{ dataItems.length }} State(s) selected
         </ng-template>
       </kendo-multiselect>
         </kendo-label>

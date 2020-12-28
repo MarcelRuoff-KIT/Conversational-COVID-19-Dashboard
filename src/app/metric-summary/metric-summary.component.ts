@@ -70,10 +70,10 @@ export class MetricSummaryComponent implements OnInit {
 
     that = this;
 
-    if(this.selectedMetric == "Gesamte Fälle") { //Total Cases
+    if(this.selectedMetric == "Total Cases") { //Total Cases
       that.covid = coviddata.states;
       }
-      else if(this.selectedMetric == "Gesamte Tote"){ //Total Deaths
+      else if(this.selectedMetric == "Total Deaths"){ //Total Deaths
       that.covid = coviddataDeaths.states;
     }
 

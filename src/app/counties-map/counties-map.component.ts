@@ -36,7 +36,7 @@ export class CountiesMapComponent implements OnInit {
   projection;
   path;
 
-  width = 960;
+  width = 750;
   height = 500;
 
 
@@ -59,12 +59,6 @@ export class CountiesMapComponent implements OnInit {
 
   zoom;
   active;
-
-  zoomSettings = {
-    duration: 1000,
-    ease: d3.easeCubicOut,
-    zoomLevel: 5
-  };
 
   formatDecimal = d3.format(',.0f');
   legendContainer;
@@ -93,6 +87,7 @@ export class CountiesMapComponent implements OnInit {
   dateMax;
   userID;
   treatment;
+  task;
 
   sqrtScale;
   colorScaleSqrt;
@@ -142,6 +137,13 @@ export class CountiesMapComponent implements OnInit {
         }
         else{
           this.treatment = "0";
+        }
+
+        if (this.route.snapshot.params['task']) {
+          this.task = this.route.snapshot.params['task'];
+        }
+        else{
+          this.task = "0";
         }
 
 
@@ -200,7 +202,7 @@ export class CountiesMapComponent implements OnInit {
       });
 
     this.projection = d3.geoAlbersUsa()
-      .scale(1000)
+      .scale(800)
       .translate([this.width / 2, this.height / 2]);
 
     this.path = d3.geoPath()
@@ -209,6 +211,7 @@ export class CountiesMapComponent implements OnInit {
     this.svg = d3.select(this.hostElement).append('svg')
       .attr('width', this.width)
       .attr('height', this.height + 75)
+      .attr("style", 'display: block; margin: auto')
       .on("click", this.stopped, true);
 
 
@@ -246,7 +249,7 @@ export class CountiesMapComponent implements OnInit {
     if (that.date > that.max) {
       that.date = that.dateMax;
       that.value = that.max;
-      this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID + '/' + this.treatment);
+      this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID + '/' + this.treatment + "/" + this.task);
     }
 
 
@@ -269,7 +272,7 @@ export class CountiesMapComponent implements OnInit {
     
       this.drillDownService.scale = stateParameters.scale;
       if (that.selectedState == "Alaska" || that.selectedState == "Hawaii") {
-       this.drillDownService.x = stateParameters.x - 300;
+       this.drillDownService.x = (stateParameters.x - 300);
        this.drillDownService.y = stateParameters.y - 50;
      } else {
        this.drillDownService.x = stateParameters.x;
@@ -335,11 +338,14 @@ export class CountiesMapComponent implements OnInit {
       .attr('stroke-width', 0.3)
       .attr('cursor', 'pointer')
       .attr('fill', function (d) {
-        var metric = d.metric ? d.metric : 0;
+        var metric = d.metric ? d.metric : -1;
         if (metric > 0) {
             return that.colorScaleSqrt(metric)
         }
-        else {
+        else if (d.state == that.selectedState){
+          return "#008000";
+        }
+        else{
           return "#f2f2f2";
         }
       })
@@ -461,19 +467,27 @@ export class CountiesMapComponent implements OnInit {
   }
 
   valueChange(value: any) {
+
+    this.drillDownService.post(this.userID, this.task, this.treatment, "filter", {Date: formatDate(new Date(this.value), 'yyyy-MM-dd', 'en')}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.selectedState}, 0);
+
+    //console.log("valueChangeCO")
     this.value = value;
     this.date = formatDate(new Date(this.value), 'yyyy-MM-dd', 'en');
     var data = { metric: this.metric, date: this.date}
-    this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID + '/' + this.treatment);
+    this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID + '/' + this.treatment + "/" + this.task);
     this.dateChanged.emit(data);
     this.removeExistingMapFromParent();
     this.updateMap(false);
   }
 
   selectedMetricChange(value: any) {
+
+    this.drillDownService.post(this.userID, this.task, this.treatment, "filter", {Metric: value}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.selectedState}, 0);
+
+    console.log("selectedMetricChangeCO")
     this.metric = value;
     var data = { metric: this.metric, date: this.date}
-    this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID  + '/' + this.treatment);
+    this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID  + '/' + this.treatment + "/" + this.task);
     this.dateChanged.emit(data);
     this.removeExistingMapFromParent();
     this.updateMap(false);

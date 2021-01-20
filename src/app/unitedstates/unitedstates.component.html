@@ -2,39 +2,25 @@
   <!--Creates the popup content-->
   <div class="popup-content" id="content">
     <img src="../../assets/images/info.jpg" style="width:70%;">
-    <button kendoButton [icon]="'close k-icon-30'" (click)="closeInfo()" style="position: absolute; bottom: 0; right: 0; height: 10%; width:15%;"> Close </button>
+    <button kendoButton [icon]="'close k-icon-30'" (click)="closeInfo()" style="position: absolute; bottom: 0; right: 0;height: 10%; width:15%;"> Close </button>
   </div>
 </div>
-<div class="card-container">
+<!--Main Part-->
   <div class="mouseBlock" id="hallo"></div>
-  <div class="row">
-    <div class="col-md-8 nopadding">
-      <kendo-card class="kendo-card" style="min-width:1000px">
-        <kendo-card-body>
+  <div class="row" style="width: 100%;">
+    <div id="map"  style="width: 60%;">
           <div></div>
-          <div class="card-title"><h4>{{metric}} in the United States - {{unitedStatesMap.date }}</h4></div>
+          <div><h2>{{metric}} in the United States - {{unitedStatesMap.date }}</h2></div>
           <app-unitedstates-map (dateChanged)="dateChanged($event)" #unitedStatesMap></app-unitedstates-map>
-        </kendo-card-body>
-      </kendo-card>
     </div>
-    <div class="col-md-4">
-      <div class="container">
-        <div class="row">
-          <div class="col-md">
-            <kendo-card class="kendo-card" style="min-width:500px">
-              <kendo-card-body>
-                <div class="card-title"><h4>Status</h4></div>
+    <div id="info"  style="width: 40%;">
+                <div><h2>&nbsp;</h2></div>
                 <app-metric-summary #metricSummary></app-metric-summary>
-              </kendo-card-body>
-            </kendo-card>
-          </div>
-        </div>
-      </div>
-      <button kendoButton [icon]="'information k-icon-30'" (click)="openInfo()" style="position: absolute; bottom: 0; right: 0; height: 10%; width:15%;"></button>
+      <div class="webchat-container" id="botWin" #botWindow ></div>
     </div>
   </div>
   <div class="row">
-    <div class="webchat-container" id="botWin" #botWindow></div>
+    <button kendoButton [icon]="'information k-icon-30'" (click)="openInfo()" style="position: absolute; top: 0; right: 0;  height: 50px; width:100px;"></button>
   </div>
-</div>
+<!--END UnitesStates Component-->
 

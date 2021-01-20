@@ -23,11 +23,11 @@
 
 div.tooltip {
   position: absolute;
-  text-align: left;
-  width: 100px;
+  text-align: center;
+  width: 140px;
   height: 20px;
   padding: 2px;
-  font: 12px sans-serif;
+  font: 16px sans-serif;
   background: white;
   color: black;
   border: 1px solid grey;
@@ -40,3 +40,4 @@ div.tooltip {
   stroke: grey;
   stroke-width: 2;
 }
+

@@ -1,32 +1,27 @@
 <div class="container">
   <div class="row">
-    <div class="col-md-12">
-    </div>
-  </div>
-
-  <div class="row">
-      <div class="col-md-3">
-      <kendo-label text="Date:"class="float-right">&nbsp;
+    <div class="col">
+      <kendo-label text="Date:"><br>
       <kendo-slider #slider [tickPlacement]="tickPlacement"
                     [min]="min"
                     [max]="max"
                     [smallStep]="smallStep"
-                    [value]="value"
                     [(ngModel)]="value"
                     (valueChange)="valueChange($event)"></kendo-slider> 
                   </kendo-label>
     </div>
-    <div class="col-md-3">
-      <p></p>
+    <div class="col">
+      <p style="margin:0">&nbsp; </p>
       <kendo-combobox 
           [data]="listItems" 
           (valueChange)="selectedMetricChange($event)"
+          [clearButton] = "false"
           [(ngModel)]="metric"
           [filterable] = "true">
       </kendo-combobox>
     </div>
-    <div class="col-md-6"   >
-      <kendo-label text="States:"class="float-right">&nbsp;
+    <div class="col"   >
+      <kendo-label text="States:"><br>
         <kendo-multiselect #scaleDropDown 
           [filterable] = "true"
           [data]="scaleButtons" 
@@ -34,23 +29,16 @@
         [clearButton]="false"
         [autoClose]="false"
         [placeholder]="'Select States...'"
-        (valueChange)="selectedScaleChange($event)"
+        (valueChange)="selectedStateChange($event)"
         [(ngModel)]="statesSelect"
         [popupSettings]="{ height: 66 }"
-        listHeight="66"
-      >
+        listHeight="66">
       <ng-template kendoMultiSelectGroupTagTemplate let-dataItems>
           <span class="k-icon k-i-arrow-s"></span>
           {{ dataItems.length }} State(s) selected
         </ng-template>
       </kendo-multiselect>
         </kendo-label>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-12">
-      <svg>
-      </svg>
     </div>
   </div>
 </div>

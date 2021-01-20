@@ -8,6 +8,8 @@ import { filter } from 'rxjs/operators';
 import { CountiesMapComponent } from '../counties-map/counties-map.component';
 import { MetricSummaryComponent } from '../metric-summary/metric-summary.component';
 import * as $ from "jquery";
+import { DrillDownService } from "../shared/drilldown.services";
+
 
 /**
  * Declares the WebChat property on the window object.
@@ -33,6 +35,7 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
 
   refreshInterval;
   treatment;
+  task;
   selectedState = "United States";
   metric = "Cases";
   scale = "Sqrrt";
@@ -40,12 +43,14 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
   tab = "Totals";
   date = "";
   userID;
-  currentTime;
+  currentTime;  
+  public componentAction = null;
+  public componentMessage = null;
 
 
   private _routerSub = Subscription.EMPTY;
 
-  constructor(public router: Router, public route: ActivatedRoute) { 
+  constructor(public router: Router, private drillDownService: DrillDownService, public route: ActivatedRoute) { 
 
     this._routerSub = router.events.pipe(
       filter(event => event instanceof NavigationEnd)
@@ -79,6 +84,14 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
             this.treatment = "0";
           }
 
+          if (this.route.snapshot.params['task']) {
+            this.task = this.route.snapshot.params['task'];
+          }
+          else{
+            this.task = "0";
+          }
+
+
         });
 
       });
@@ -90,18 +103,18 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
     //console.log("Cookie: " + document.cookie)
     //console.log(this.getCookie("conversationID"))
     this.currentTime = new Date()
-    if(document.cookie.includes("conversationID")){
+    if(sessionStorage.getItem('conversationID') != null){
       //console.log(new Date())
-      var conversationID = this.getCookie("conversationID")
+      var conversationID = sessionStorage.getItem('conversationID')
       var directLine = window.WebChat.createDirectLine({
-        secret: "gRcPqKxRTUc.TC9nxY9t2jvUxfDA0x9Z7pm4hXsGUly5IT9GQNJ_npI",
+        secret: "Ye6XyojNens.RBOseW23O3THiyjuLJXpafIUmLzAS70KJRv2pono0_A",
         conversationId: conversationID,
         webSocket: false
     });
   }
   else{
     var directLine = window.WebChat.createDirectLine({
-      secret: "gRcPqKxRTUc.TC9nxY9t2jvUxfDA0x9Z7pm4hXsGUly5IT9GQNJ_npI",
+      secret: "Ye6XyojNens.RBOseW23O3THiyjuLJXpafIUmLzAS70KJRv2pono0_A",
       webSocket: false
       });
     }
@@ -123,13 +136,6 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
           };
       }
   };
-
-  const webSpeechPonyfillFactory = window.WebChat.createCognitiveServicesSpeechServicesPonyfillFactory({
-    credentials: {
-        region: 'westus',
-        subscriptionKey: '55240fa205624ece8a53255dcba36df2'
-    }
-});
 
 const store = window.WebChat.createStore(
   {},
@@ -180,6 +186,9 @@ const store = window.WebChat.createStore(
       .subscribe(
           
           id => {//console.log(`Posted activity, assigned ID ${id}`); console.log(directLine.conversationId);
+          if(sessionStorage.getItem('conversationID') == null) {
+            sessionStorage.setItem('conversationID', directLine.conversationId);
+          }
         },
           error => console.log(`Error posting activity ${error}`)
       );
@@ -187,29 +196,18 @@ const store = window.WebChat.createStore(
   }
 
   ngOnDestroy() {
-    //console.log("Destroy")
+    console.log("Destroy")
     this.currentTime = new Date(8640000000000000);
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
     }
+    window.removeEventListener('webchatincomingactivity', this.webChatHandler.bind(this));
+
   }
 
   public ngAfterViewInit(): void {
 
-      window.addEventListener('webchatincomingactivity', event => {
-        if ((<any>event).data.type == 'event' && this.router.url.includes("counties") && (new Date((<any>event).data.timestamp) >= this.currentTime)) {
-
-            if ((<any>event).data.name == "Filter") {
-                this.filterDashboard((<any>event).data.value)
-            }
-            else if ((<any>event).data.name == "DrillDown") {
-              this.filterDashboard((<any>event).data.value)
-            }
-            else if ((<any>event).data.name == "Overview"){
-              this.navigateLeft()
-            }
-        }
-    });
+    window.addEventListener('webchatincomingactivity', this.webChatHandler.bind(this));
 
     document.getElementById("overlay").addEventListener("click", function() {
       $(".popup-overlay, .popup-content").removeClass("active");
@@ -235,10 +233,26 @@ const store = window.WebChat.createStore(
 
   ngAfterContentInit() {
     this.initialize();
+    switch(this.treatment) {
+      case '0':
+        //console.log("Treatment: " + this.treatment)
+        break;
+      case '1':
+        //console.log("Treatment: " + this.treatment)
+        document.getElementById("hallo").style.zIndex = '2';
+        break;
+      case '2':
+        //console.log("Treatment: " + this.treatment)
+        document.getElementById("botWin").style.display = 'none';
+        break;
+    }
   }
 
   navigateLeft() {
-    this.router.navigate(['/unitedstates' +  "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID  + '/' + this.treatment]);
+    console.log("backCO")
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Zoom Out", [], {site: "Counties", metric: this.countiesMap.metric, date: this.countiesMap.date, statesSelected: this.countiesMap.selectedState}, 1);
+
+    this.router.navigateByUrl('/unitedstates' +  "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID  + '/' + this.treatment + "/" + this.task);
   }
 
   openInfo() {
@@ -250,6 +264,8 @@ const store = window.WebChat.createStore(
   }
 
   dateChanged(data) {
+    //console.log("dateChangeCO")
+
     if (data.date) {
       this.metricSummary.date = data.date;
     }
@@ -260,6 +276,9 @@ const store = window.WebChat.createStore(
   }
 
   public filterDashboard(values) {
+    console.log("filterCO")
+    this.drillDownService.post(this.userID, this.task, this.treatment, "filter", values, {site: "Counties", metric: this.countiesMap.metric, date: this.countiesMap.date, statesSelected: this.countiesMap.selectedState}, 1);
+
     //console.log(this.router.url)
     var FilterValues = new Map();
                     for (var i = 0; i < values.length; i += 2) {
@@ -295,7 +314,7 @@ const store = window.WebChat.createStore(
                       this.countiesMap.updateMap(false)
                       this.metricSummary.updateSummary();
                     }
-    this.router.navigateByUrl("/counties/" + this.countiesMap.selectedState + "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID  + '/' + this.treatment);
+    this.router.navigateByUrl("/counties/" + this.countiesMap.selectedState + "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID  + '/' + this.treatment + "/" + this.task);
   }
 
   public getCookie(name) {
@@ -303,6 +322,41 @@ const store = window.WebChat.createStore(
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
   }
+
+  public webChatHandler (event){
+    var sheight = document.querySelectorAll("[class$=webchat__basic-transcript__scrollable]")[0].scrollHeight;
+    document.querySelectorAll("[class$=webchat__basic-transcript__scrollable]")[0].scrollTo(0, sheight);
+      if (this.router.url.includes("counties") && (new Date((<any>event).data.timestamp) >= this.currentTime)) {  //
+        if((<any>event).data.type == 'event'){
+          if((<any>event).data.timestamp != this.componentAction){  
+            this.componentAction = (<any>event).data.timestamp;
+            //display seed change by adding branch
+            if ((<any>event).data.name == "Filter" && (<any>event).data.value != null) {
+                //console.log((<any>event).data.value)
+                this.filterDashboard((<any>event).data.value);
+            }
+            else if ((<any>event).data.name == "DrillDown" && (<any>event).data.value != null){
+              //console.log((<any>event).data.value)
+              //this.drillDown((<any>event).data.value);
+              this.filterDashboard((<any>event).data.value);
+          }
+        }
+      }
+      else if((<any>event).data.type == 'message' && (<any>event).data.from.name != 'SpeechQuestionBot'){
+        if((<any>event).data.channelData.clientTimestamp != this.componentMessage){ 
+          this.componentMessage = (<any>event).data.channelData.clientTimestamp;
+          if((<any>event).data.channelData.speech != null){
+            console.log("speech");
+            //this.drillDownService.postSpeech(1, (<any>event).data.text);
+          }
+          else{
+            console.log("nospeech");
+          }
+        }
+      }
+      }
+  
+}
 
   
 }

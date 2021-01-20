@@ -27,9 +27,10 @@ p {
 
 
 .homeBackground {
-  background:#9c9c9c38;
+  background:white;
   width: 100%;
   height: 100%;
+  overflow:hidden;
 }
 
 /* standard button*/
@@ -45,7 +46,7 @@ p {
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
-  touch-action: manipulation;
+  //touch-action: manipulation;
   cursor: pointer;
   background-image: none;
   line-height: 1.42857143;

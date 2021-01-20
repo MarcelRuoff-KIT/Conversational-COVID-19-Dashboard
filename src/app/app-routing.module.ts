@@ -4,8 +4,8 @@ import { UnitedStatesComponent } from './unitedstates/unitedstates.component';
 import { CountiesComponent } from './counties/counties.component';
 
 const routes: Routes = [
-  { path: 'counties/:selectedState/:selectedMetric/:selectedDate/:userID/:treatment', component: CountiesComponent },
-  { path: 'unitedstates/:selectedMetric/:selectedDate/:userID/:treatment', component: UnitedStatesComponent },
+  { path: 'counties/:selectedState/:selectedMetric/:selectedDate/:userID/:treatment/:task', component: CountiesComponent },
+  { path: 'unitedstates/:selectedMetric/:selectedDate/:userID/:treatment/:task', component: UnitedStatesComponent },
   { path: '', component: UnitedStatesComponent }
 ];
 

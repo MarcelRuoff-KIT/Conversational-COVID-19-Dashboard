@@ -1,12 +1,7 @@
 <div class="container">
   <div class="row">
-    <div class="col-md-12">
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-md-3">
-      <kendo-label text="Date:"class="float-right">&nbsp;
+    <div class="col">
+      <kendo-label text="Date:"><br>
       <kendo-slider #slider [tickPlacement]="tickPlacement"
                     [min]="min"
                     [max]="max"
@@ -16,23 +11,17 @@
                     (valueChange)="valueChange($event)"></kendo-slider>
                   </kendo-label>
     </div>
-    <div class="col-md-3">
-      <p></p>
+    <div class="col">
+      <p style="margin:0">&nbsp; </p>
       <kendo-combobox 
           [data]="listItems" 
           (valueChange)="selectedMetricChange($event)"
+          [clearButton] = "false"
           [(ngModel)]="metric"
           [filterable] = "true">
       </kendo-combobox>
     </div>
-    
-    <div class="col-md-6"></div>
-  </div>
-  <div class="row">
-    <div class="col-md-12">
-      <svg>
-      </svg>
-    </div>
+    <div class="col">&nbsp;</div>
   </div>
 </div>
 

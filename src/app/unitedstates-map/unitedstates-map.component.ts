@@ -7,7 +7,8 @@ import {
   ViewChild,
   EventEmitter,
   Output,
-  Input
+  Input,
+  AfterViewInit
 } from "@angular/core";
 
 import {
@@ -44,7 +45,7 @@ import { SliderComponent } from '@progress/kendo-angular-inputs';
   templateUrl: "./unitedstates-map.component.html",
   styleUrls: ["./unitedstates-map.component.scss"]
 })
-export class UnitedStatesMapComponent implements OnInit {
+export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
   @ViewChild('slider', { static: true }) slider: SliderComponent;
   @Output() dateChanged = new EventEmitter<any>();
@@ -61,7 +62,9 @@ export class UnitedStatesMapComponent implements OnInit {
   path;
   that;
 
-  width = 960;
+  stateScales = [];
+
+  width = 760;
   height = 500;
 
 
@@ -117,6 +120,7 @@ export class UnitedStatesMapComponent implements OnInit {
   statesSelect = [];
 
   treatment;
+  task;
   metric = "Total Cases";
   date;
   dateMin = "2020-01-21";
@@ -172,6 +176,13 @@ export class UnitedStatesMapComponent implements OnInit {
             this.treatment = "0";
           }
 
+          if (this.route.snapshot.params['task']) {
+            this.task = this.route.snapshot.params['task'];
+          }
+          else{
+            this.task = "0";
+          }
+
           if (this.route.snapshot.params['selectedMetric']) {
             this.metric = this.route.snapshot.params['selectedMetric'];
           }
@@ -186,15 +197,17 @@ export class UnitedStatesMapComponent implements OnInit {
           else {
             this.date = formatDate(new Date().setDate(new Date().getDate() - 1), 'yyyy-MM-dd', 'en');
           }
-           
+          
+          
           if (this.router.url.indexOf('/unitedstates') != -1 || this.router.url === "/") {
             this.removeExistingMapFromParent();
             this.updateMap();
           }
+          /**/
 
           // Go to homepage default
           if (this.router.url === "/") {
-            this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID + "/" + this.treatment );
+            this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID + "/" + this.treatment + "/" + this.task);
           }
 
 
@@ -203,6 +216,10 @@ export class UnitedStatesMapComponent implements OnInit {
   }
 
   ngOnInit() {
+  }
+
+  public ngAfterViewInit(): void {
+    console.log('Site Loaded')
   }
 
   public removeExistingMapFromParent() {
@@ -217,7 +234,7 @@ export class UnitedStatesMapComponent implements OnInit {
 
   updateMap() {
     //console.log(this.statesSelect)
-    //console.log("update STates")
+    //console.log("update States")
     this.active = d3.select(null);
 
     this.projection = d3
@@ -242,6 +259,7 @@ export class UnitedStatesMapComponent implements OnInit {
       .append("svg")
       .attr("width", this.width)
       .attr("height", this.height + 75)
+      .attr("style", 'display: block; margin: auto')
       .on("click", this.stopped, true);
 
     var that = this;
@@ -281,10 +299,10 @@ export class UnitedStatesMapComponent implements OnInit {
     }
 
     // Set date to max date if no data available
-    if (that.date > that.dateMax) {
+    if (new Date(that.date) > new Date(that.dateMax)) {
       that.date = that.dateMax;
       that.value = that.max;
-      this.location.go('unitedstates/' + this.metric + "/" + that.date + "/" + that.userID + "/" + this.treatment);
+      this.location.go('unitedstates/' + this.metric + "/" + that.date + "/" + that.userID + "/" + this.treatment + "/" + this.task);
     }
     
     
@@ -336,6 +354,7 @@ export class UnitedStatesMapComponent implements OnInit {
       .attr("id", function(d) { return d.name.replace(" ", "_") ; })
       .attr("class", "feature")
       .on("click", function (d) {
+        console.log("drillDownMouseUS")
         that.clicked(d, that, this);
       })
       .attr("class", "county")
@@ -351,7 +370,8 @@ export class UnitedStatesMapComponent implements OnInit {
         else if (metric > 0) {
               return that.colorScaleSqrt(metric);
         } else {
-          return "#f2f2f2";
+          return "#008000";  
+          //return "#f2f2f2";
         }
       })
       .on("mouseover", function (d) {
@@ -467,6 +487,26 @@ export class UnitedStatesMapComponent implements OnInit {
     if (p.active.node() === e) return p.reset(d, p);
     //p.active.classed("active", false);
     p.active = d3.select(e).classed("active", true);
+/*
+    var bounds = p.path.bounds(d),
+      dx = bounds[1][0] - bounds[0][0],
+      dy = bounds[1][1] - bounds[0][1],
+      x = (bounds[0][0] + bounds[1][0]) / 2,
+      y = (bounds[0][1] + bounds[1][1]) / 2,
+      scale = Math.max(
+        1,
+        Math.min(8, 0.9 / Math.max(dx / p.width, dy / p.height))
+      ),
+      translate = [p.width / 2 - scale * x, p.height / 2 - scale * y];
+
+      this.stateScales.push({x: translate[0], y: translate[1], scale: scale, State: d.abbrev})
+
+      console.log(this.stateScales)
+
+
+    */
+   this.drillDownService.post(this.userID, this.task, this.treatment, "drilldown", {Target: d.abbrev}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.statesSelect}, 0);
+
 
     var stateParameters = this.drillDownService.countiesMapped.find(stateElement => stateElement.State === d.abbrev)
 
@@ -486,28 +526,29 @@ export class UnitedStatesMapComponent implements OnInit {
       )
       .on("end", p.drillDown(d.abbrev, p.metric, p.date)); // updated for d3 v4
       
+      
   }
 
   select(state){
+    console.log("drillDownSpeechUS")
     d3.select('path#' + state).dispatch('click');
   }
 
   drillDown(state, metric, date) {
-
     var stateParameters = this.drillDownService.countiesMapped.find(stateElement => stateElement.State === state)
 
     //console.log(stateParameters)
     
     this.drillDownService.scale = stateParameters.scale;
     if (state == "Alaska" || state == "Hawaii") {
-      this.drillDownService.x = stateParameters.x - 300;
+      this.drillDownService.x = (stateParameters.x - 300);
       this.drillDownService.y = stateParameters.y - 50;
     } else {
       this.drillDownService.x = stateParameters.x;
       this.drillDownService.y = stateParameters.y;
     }
     
-    this.router.navigateByUrl("/counties/" + state + "/" + metric + "/" + date + "/" + this.userID + "/" + this.treatment);
+    this.router.navigate(["/counties/" + state + "/" + metric + "/" + date + "/" + this.userID + "/" + this.treatment + "/" + this.task]);
   }
 
   join(lookupTable, mainTable, lookupKey, mainKey, select) {
@@ -529,8 +570,10 @@ export class UnitedStatesMapComponent implements OnInit {
     return output;
   }
 
-  selectedScaleChange(value: any) {
-    //console.log(value)
+  selectedStateChange(value: any) {
+    
+    this.drillDownService.post(this.userID, this.task, this.treatment, "filter", {State: this.statesSelect}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.statesSelect}, 0);
+
     var data = { metric: this.metric, date: this.date, statesSelected: this.statesSelect}
     this.dateChanged.emit(data);
     this.removeExistingMapFromParent()
@@ -540,9 +583,13 @@ export class UnitedStatesMapComponent implements OnInit {
 
 
   valueChange(e) {
+    this.drillDownService.post(this.userID, this.task, this.treatment, "filter", {Date: formatDate(new Date(this.value), 'yyyy-MM-dd', 'en')}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.statesSelect}, 0);
+
+
+    console.log("valueChangedUS")
     this.date = formatDate(new Date(this.value), 'yyyy-MM-dd', 'en');
     var data = { metric: this.metric, date: this.date, statesSelected: this.statesSelect}
-    this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID + "/" + this.treatment);
+    this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID + "/" + this.treatment + "/" + this.task);
     this.drillDownService.date = this.date;
     this.dateChanged.emit(data);
     this.removeExistingMapFromParent();
@@ -550,11 +597,14 @@ export class UnitedStatesMapComponent implements OnInit {
   }
 
   selectedMetricChange(value: any) {
-    //console.log(value)
+    this.drillDownService.post(this.userID, this.task, this.treatment, "filter", {Metric: value}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.statesSelect}, 0);
+
+
+    console.log("SelectedMetricChangeUS")
     this.metric = value
     var data = { metric: this.metric, date: this.date, statesSelected: this.statesSelect}
     this.dateChanged.emit(data);
-    this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID + "/" + this.treatment);
+    this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID + "/" + this.treatment + "/" + this.task);
     this.removeExistingMapFromParent()
     this.updateMap();
   }

@@ -1,8 +1,9 @@
 <div class="container">
   <div class="row">
     <div class="col">
-      <kendo-label text="Date:"><br>
+      <kendo-label text="Date: ">({{date}})<br>
       <kendo-slider #slider [tickPlacement]="tickPlacement"
+                    [style.width]="'95%'"
                     [min]="min"
                     [max]="max"
                     [smallStep]="smallStep"
@@ -15,6 +16,7 @@
       <p style="margin:0">&nbsp; </p>
       <kendo-combobox 
           [data]="listItems" 
+          [style.width]="'80%'"
           (valueChange)="selectedMetricChange($event)"
           [clearButton] = "false"
           [(ngModel)]="metric"

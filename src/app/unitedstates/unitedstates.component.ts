@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MetricSummaryComponent } from '../metric-summary/metric-summary.component';
 import { DrillDownService } from "../shared/drilldown.services";
+import { ValueAxisComponent } from '@progress/kendo-angular-charts';
 
 /**
  * Declares the WebChat property on the window object.
@@ -30,6 +31,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
   @ViewChild("botWindow", {static: true}) botWindowElement: ElementRef;
 
   private _routerSub = Subscription.EMPTY;
+  refreshInterval;
   public metric = "Total Cases";
   public userID;
   public currentTime;
@@ -39,6 +41,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
   public store;
   public componentAction = null;
   public componentMessage = null;
+  public messengerID = null;
   
   constructor(
     private router: Router, 
@@ -81,9 +84,16 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
   async ngOnInit() {
 
-    //console.log(document.cookie)
     this.currentTime = new Date()
-    if(sessionStorage.getItem('conversationID') != null){
+
+    try{
+      this.messengerID = sessionStorage.getItem('conversationID')
+    }
+    catch (e) {
+      this.drillDownService.post(this.userID, this.task, this.treatment, "CatchException", null, {site: "UnitedStates", metric: this.unitedStatesMap.metric, date: this.unitedStatesMap.date, statesSelected: this.unitedStatesMap.statesSelect}, 0);
+   }
+
+    if(this.messengerID != null){
       var conversationID = sessionStorage.getItem('conversationID')
       var directLine = window.WebChat.createDirectLine({
         secret: "Ye6XyojNens.RBOseW23O3THiyjuLJXpafIUmLzAS70KJRv2pono0_A",
@@ -100,8 +110,8 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
     async function createHybridPonyfillFactory() {
       const speechServicesPonyfillFactory = await window.WebChat.createCognitiveServicesSpeechServicesPonyfillFactory({ credentials: {
-        region: 'westus',
-        subscriptionKey: '55240fa205624ece8a53255dcba36df2'
+        region: 'eastus',
+        subscriptionKey: '08c0fdef029e44a8a2893676f6f1035c'
     } });
 
       return (options) => {
@@ -136,6 +146,8 @@ this.store = window.WebChat.createStore(
       return next(action);
   });
 
+if(this.treatment != 4 && this.treatment != 5){
+  this.drillDownService.post(this.userID, this.task, this.treatment, "Webchat", null, {site: "UnitedStates", metric: this.unitedStatesMap.metric, date: this.unitedStatesMap.date, statesSelected: this.unitedStatesMap.statesSelect}, 0);
 
   window.WebChat.renderWebChat(
       {
@@ -146,16 +158,18 @@ this.store = window.WebChat.createStore(
                         bubbleBackground: 'rgba(0, 0, 255, .1)',
                         bubbleFromUserBackground: 'rgba(0, 255, 0, .1)',
                         sendBoxButtonColor: 'rgba(255,153, 0, 1)',
+                        sendBoxButtonColorOnFocus: 'rgba(255,153, 0, 1)',
+                        sendBoxButtonColorOnHover: 'rgba(255,153, 0, 1)',
                         hideScrollToEndButton: true,
                         sendBoxHeight: 70,
                         bubbleMinHeight: 0,
                         bubbleMaxWidth: 600,
                     },
                     webSpeechPonyfillFactory: await createHybridPonyfillFactory(),
-                    locale: 'en-US', //de-DE
+                    locale: 'en-US', 
                     store: this.store,
                     overrideLocalizedStrings: {
-                      TEXT_INPUT_PLACEHOLDER: 'Click on the microphone icon and speak OR type your message...'
+                      TEXT_INPUT_PLACEHOLDER: 'Click on the microphone and speak OR type ...'
                     }
 
       },
@@ -163,9 +177,7 @@ this.store = window.WebChat.createStore(
 
   );
 
-  document.querySelector('#botWin > div > div > div >div >div >div >button > svg').setAttribute('height', '65');
-  document.querySelector('#botWin > div > div > div >div >div >div >button > svg').setAttribute('width', '65');
-  document.querySelector('#botWin > div > div > div >div >div >div >button > svg').setAttribute('style', 'padding-right: 20px');
+
 
   directLine
   .postActivity({
@@ -175,29 +187,75 @@ this.store = window.WebChat.createStore(
     value: "token"
 })
 .subscribe(
-    id => {//console.log(`Posted activity, assigned ID ${id}`); 
-            if(sessionStorage.getItem('conversationID') == null) {
+    id => {if(sessionStorage.getItem('conversationID') == null) {
               sessionStorage.setItem('conversationID', directLine.conversationId);
-              //document.cookie = "conversationID=" + directLine.conversationId ; //+ "; SameSite=None; Secure"
               console.log(sessionStorage.getItem('conversationID'));
             };},
     error => console.log(`Error posting activity ${error}`)
 );
 
 }
+}
 
   ngOnDestroy() {
-    console.log("Destroy")
     this.currentTime = new Date(8640000000000000);
     this.directLine = null;
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
     window.removeEventListener('webchatincomingactivity', this.webChatHandler.bind(this));
+    window.removeEventListener("message", this.messageHandler.bind(this), false);
     this.store = null;
   }
 
+  initialize() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+    this.refreshInterval = setInterval(() => {
+      switch(this.treatment) {
+        case '0':
+          //console.log("Treatment: " + this.treatment)
+          break;
+        case '1':
+          //console.log("Treatment: " + this.treatment)
+          break;
+        case '2':
+          //console.log("Treatment: " + this.treatment)
+          document.getElementById("hallo").style.zIndex = '100';
+          document.getElementById("infoButton").style.display = 'none';
+
+          break;
+        case '3':
+          //console.log("Treatment: " + this.treatment)
+          document.getElementById("hallo").style.zIndex = '100';
+          document.getElementById("infoButton").style.display = 'none';
+          break;
+        case '4':
+          //console.log("Treatment: " + this.treatment)
+          document.getElementById("botWin").style.display = 'none';
+          break;
+        case '5':
+          //console.log("Treatment: " + this.treatment)
+          document.getElementById("botWin").style.display = 'none';
+          break;
+      }
+      document.querySelectorAll('#botWin > div > div > div > div > button > svg')[0].setAttribute('height', '65');
+      document.querySelectorAll('#botWin > div > div > div > div > button > svg')[0].setAttribute('width', '65');
+      document.querySelectorAll('#botWin > div > div > div > div > button > svg')[0].setAttribute('style', 'padding-right: 20px');
+    }, 1000);
+
+  }
+
   public ngAfterViewInit(): void {
+
     this.router.navigate(['unitedstates/' + this.unitedStatesMap.metric + "/" + this.unitedStatesMap.date + "/" + this.unitedStatesMap.userID + "/" + this.unitedStatesMap.treatment + "/" + this.unitedStatesMap.task])
 
+    if(this.treatment != 4 && this.treatment != 5){
     window.addEventListener('webchatincomingactivity', this.webChatHandler.bind(this));
+    }
+    window.addEventListener("message", this.messageHandler.bind(this), false);
+    
 
     document.getElementById("overlay").addEventListener("click", function() {
       $(".popup-overlay, .popup-content").removeClass("active");
@@ -207,26 +265,14 @@ this.store = window.WebChat.createStore(
       $(".popup-overlay, .popup-content").removeClass("active");
     });
 
+
   }
 
   public ngAfterContentInit() {
-    switch(this.treatment) {
-      case '0':
-        //console.log("Treatment: " + this.treatment)
-        break;
-      case '1':
-        //console.log("Treatment: " + this.treatment)
-        document.getElementById("hallo").style.zIndex = '2';
-        break;
-      case '2':
-        //console.log("Treatment: " + this.treatment)
-        document.getElementById("botWin").style.display = 'none';
-        break;
-    }
+    this.initialize();
   }
 
   dateChanged(data) {
-    //console.log("dateChangedUS")
 
 
     if(data.statesSelected){
@@ -246,7 +292,6 @@ this.store = window.WebChat.createStore(
   }
 
   public drillDown(values){
-    console.log("drillDownUS")
 
     var state;
     var FilterValues = new Map();
@@ -263,7 +308,6 @@ this.store = window.WebChat.createStore(
                         }
 
                     }
-                    //console.log(FilterValues)
                     for (var [key, value] of FilterValues.entries()) {
                       if(key == "States"){
                         state = value
@@ -343,38 +387,45 @@ this.store = window.WebChat.createStore(
   }
 
   openInfo() {
+    if(this.treatment == 0 || this.treatment == 1){
+      $("#infoPic").attr("src", "../../assets/images/info.jpg");
+    }
+    else if(this.treatment ==4 || this.treatment == 5){
+      $("#infoPic").attr("src", "../../assets/images/info_Mouse.jpg");
+    }
     $(".popup-overlay, .popup-content").addClass("active");
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Help", null, {site: "UnitedStates", metric: this.unitedStatesMap.metric, date: this.unitedStatesMap.date, statesSelected: this.unitedStatesMap.statesSelect}, 0);
   }
 
   closeInfo() {
     $(".popup-overlay, .popup-content").removeClass("active");
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Close Help", null, {site: "UnitedStates", metric: this.unitedStatesMap.metric, date: this.unitedStatesMap.date, statesSelected: this.unitedStatesMap.statesSelect}, 0);
+
   }
 
-  public getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-  }
 
   public webChatHandler (event){
     var sheight = document.querySelectorAll("[class$=webchat__basic-transcript__scrollable]")[0].scrollHeight;
-    document.querySelectorAll("[class$=webchat__basic-transcript__scrollable]")[0].scrollTo(0, sheight);
+    document.querySelectorAll("[class$=webchat__basic-transcript__scrollable]")[0].scrollTo({left: 0, top:sheight, behavior: 'auto'});
       if ((this.router.url.includes("unitedstates") || this.router.url == "/") && (new Date((<any>event).data.timestamp) >= this.currentTime)) {  //
         if((<any>event).data.type == 'event'){
           if((<any>event).data.timestamp != this.componentAction){  
             this.componentAction = (<any>event).data.timestamp;
           //display seed change by adding branch
           if ((<any>event).data.name == "Filter" && (<any>event).data.value != null) {
-              this.drillDownService.post(this.userID, this.task, this.treatment, "filter", (<any>event).data.value, {site: "UnitedStates", metric: this.unitedStatesMap.metric, date: this.unitedStatesMap.date, statesSelected: this.unitedStatesMap.statesSelect}, 1);
+              this.drillDownService.post(this.userID, this.task, this.treatment, "Filter", (<any>event).data.value, {site: "UnitedStates", metric: this.unitedStatesMap.metric, date: this.unitedStatesMap.date, statesSelected: this.unitedStatesMap.statesSelect}, 1);
 
               //console.log((<any>event).data.value)
               this.filterDashboard((<any>event).data.value);
           }
           else if ((<any>event).data.name == "DrillDown" && (<any>event).data.value != null){
-            this.drillDownService.post(this.userID, this.task, this.treatment, "drilldown", {Target: (<any>event).data.value}, {site: "UnitedStates", metric: this.unitedStatesMap.metric, date: this.unitedStatesMap.date, statesSelected: this.unitedStatesMap.statesSelect}, 1);
+            this.drillDownService.post(this.userID, this.task, this.treatment, "Drilldown", {Target: (<any>event).data.value}, {site: "UnitedStates", metric: this.unitedStatesMap.metric, date: this.unitedStatesMap.date, statesSelected: this.unitedStatesMap.statesSelect}, 1);
 
             //console.log((<any>event).data.value)
             this.drillDown((<any>event).data.value);
+          }
+          else if((<any>event).data.name == "Help"){
+            this.drillDownService.post(this.userID, this.task, this.treatment, "Help", [], {site: "UnitedStates", metric: this.unitedStatesMap.metric, date: this.unitedStatesMap.date, statesSelected: this.unitedStatesMap.statesSelect}, 1);
           }
         }
       }
@@ -383,17 +434,49 @@ this.store = window.WebChat.createStore(
           this.componentMessage = (<any>event).data.channelData.clientTimestamp;
           if((<any>event).data.channelData.speech != null){
             console.log("speech");
-            this.drillDownService.postSpeech(this.userID, this.task, this.treatment, 1, (<any>event).data.text);
+            this.drillDownService.postSpeech(this.userID, this.task, this.treatment, 1, (<any>event).data.text, "State");
           }
           else{
             console.log("nospeech");
-            this.drillDownService.postSpeech(this.userID, this.task, this.treatment, 0, (<any>event).data.text);
+            this.drillDownService.postSpeech(this.userID, this.task, this.treatment, 0, (<any>event).data.text, "State");
           }
         }
       }
       }
   
 }
+
+  public messageHandler(event) {
+        
+    if ("https://iism-im-survey.iism.kit.edu" != event.origin)
+      return;
+    const { action, value } = event.data
+    if((this.router.url.includes("unitedstates") || this.router.url == "/") && (action == 'end') && (new Date() >= this.currentTime)) {
+      this.drillDownService.post(this.userID, this.task, this.treatment, "Task Ended", value, {site: "UnitedStates", metric: this.unitedStatesMap.metric, date: this.unitedStatesMap.date, statesSelected: this.unitedStatesMap.statesSelect}, 0);
+    }
+    else if ((this.router.url.includes("unitedstates") || this.router.url == "/") && (action == 'start') && (sessionStorage.getItem('taskNr') != value) && (new Date() >= this.currentTime)){
+      this.reload(value)
+    }
+  }
+
+  public reload(value){
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Task Started", value, {site: "UnitedStates", metric: this.unitedStatesMap.metric, date: this.unitedStatesMap.date, statesSelected: this.unitedStatesMap.statesSelect}, 0);
+      this.unitedStatesMap.task = value
+      sessionStorage.setItem('taskNr', value);
+
+      this.router.navigate(['/unitedstates/Total Cases/2020-12-02/' + this.unitedStatesMap.userID  + '/' + this.unitedStatesMap.treatment + "/" + value]);
+
+
+      this.unitedStatesMap.metric = "Total Cases"
+      this.unitedStatesMap.date = "2020-12-02"
+      this.unitedStatesMap.statesSelect = [];
+      this.metricSummary.selectedState = [];
+      this.metricSummary.selectedMetric = "Total Cases";
+      this.metricSummary.date = "2020-12-02";
+      this.unitedStatesMap.removeExistingMapFromParent();
+      this.unitedStatesMap.updateMap()
+      this.metricSummary.updateSummary();
+  }
 }
 
  

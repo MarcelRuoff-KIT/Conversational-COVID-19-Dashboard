@@ -46,7 +46,7 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
   currentTime;  
   public componentAction = null;
   public componentMessage = null;
-
+  public messengerID = null;
 
   private _routerSub = Subscription.EMPTY;
 
@@ -103,7 +103,14 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
     //console.log("Cookie: " + document.cookie)
     //console.log(this.getCookie("conversationID"))
     this.currentTime = new Date()
-    if(sessionStorage.getItem('conversationID') != null){
+    try{
+      this.messengerID = sessionStorage.getItem('conversationID')
+    }
+    catch (e) {
+      this.drillDownService.post(this.userID, this.task, this.treatment, "CatchException", null, {site: "Counties", metric: this.countiesMap.metric, date: this.countiesMap.date, statesSelected: this.countiesMap.selectedState}, 0);
+    }
+
+    if(this.messengerID != null){
       //console.log(new Date())
       var conversationID = sessionStorage.getItem('conversationID')
       var directLine = window.WebChat.createDirectLine({
@@ -121,8 +128,8 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
 
     async function createHybridPonyfillFactory() {
       const speechServicesPonyfillFactory = await window.WebChat.createCognitiveServicesSpeechServicesPonyfillFactory({ credentials: {
-        region: 'westus',
-        subscriptionKey: '55240fa205624ece8a53255dcba36df2'
+        region: 'eastus',
+        subscriptionKey: '08c0fdef029e44a8a2893676f6f1035c'
     } });
 
       return (options) => {
@@ -136,6 +143,10 @@ export class CountiesComponent implements OnInit, OnDestroy, AfterContentInit, A
           };
       }
   };
+
+if(this.treatment != 4 && this.treatment != 5){
+
+  this.drillDownService.post(this.userID, this.task, this.treatment, "Webchat", null, {site: "Counties", metric: this.countiesMap.metric, date: this.countiesMap.date, statesSelected: this.countiesMap.selectedState}, 0);
 
 const store = window.WebChat.createStore(
   {},
@@ -154,7 +165,6 @@ const store = window.WebChat.createStore(
       return next(action);
   });
 
-
   window.WebChat.renderWebChat(
       {
           directLine: directLine,
@@ -164,17 +174,24 @@ const store = window.WebChat.createStore(
                         bubbleBackground: 'rgba(0, 0, 255, .1)',
                         bubbleFromUserBackground: 'rgba(0, 255, 0, .1)',
                         sendBoxButtonColor: 'rgba(255,153, 0, 1)',
+                        sendBoxButtonColorOnFocus: 'rgba(255,153, 0, 1)',
+                        sendBoxButtonColorOnHover: 'rgba(255,153, 0, 1)',
                         hideScrollToEndButton: true,
                         bubbleMinHeight: 0,
                         bubbleMaxWidth: 600,
                     },
                     webSpeechPonyfillFactory: await createHybridPonyfillFactory(),
-                    locale: 'en-US', //de-DE
-                    store
+                    locale: 'en-US', 
+                    store,
+                    overrideLocalizedStrings: {
+                      TEXT_INPUT_PLACEHOLDER: 'Click on the microphone and speak OR type ...'
+                    }
 
       },
       this.botWindowElement.nativeElement
   );
+
+
 
   directLine
       .postActivity({
@@ -185,29 +202,76 @@ const store = window.WebChat.createStore(
       })
       .subscribe(
           
-          id => {//console.log(`Posted activity, assigned ID ${id}`); console.log(directLine.conversationId);
-          if(sessionStorage.getItem('conversationID') == null) {
-            sessionStorage.setItem('conversationID', directLine.conversationId);
-          }
+          id => {if(sessionStorage.getItem('conversationID') == null) {
+                    sessionStorage.setItem('conversationID', directLine.conversationId);
+                }
         },
           error => console.log(`Error posting activity ${error}`)
       );
+}
   
   }
 
   ngOnDestroy() {
-    console.log("Destroy")
     this.currentTime = new Date(8640000000000000);
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
     }
     window.removeEventListener('webchatincomingactivity', this.webChatHandler.bind(this));
+    window.removeEventListener("message", this.messageHandler.bind(this), false);
+
+
+  }
+
+  initialize() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+    this.refreshInterval = setInterval(() => {
+
+      
+    switch(this.treatment) {
+      case '0':
+        //console.log("Treatment: " + this.treatment)
+        break;
+      case '1':
+        //console.log("Treatment: " + this.treatment)
+        break;
+      case '2':
+        //console.log("Treatment: " + this.treatment)
+        document.getElementById("hallo").style.zIndex = '100';
+        document.getElementById("infoButton").style.display = 'none';
+        document.getElementById("backButton").style.display = 'none';
+        break;
+      case '3':
+        //console.log("Treatment: " + this.treatment)
+        document.getElementById("hallo").style.zIndex = '100';
+        document.getElementById("infoButton").style.display = 'none';
+        document.getElementById("backButton").style.display = 'none';
+        break;
+      case '4':
+        //console.log("Treatment: " + this.treatment)
+        document.getElementById("botWin").style.display = 'none';
+        break;
+      case '5':
+        //console.log("Treatment: " + this.treatment)
+        document.getElementById("botWin").style.display = 'none';
+        break;
+    }
+    
+    document.querySelectorAll('#botWin > div > div > div > div > button > svg')[0].setAttribute('height', '65');
+    document.querySelectorAll('#botWin > div > div > div > div > button > svg')[0].setAttribute('width', '65');
+    //document.querySelectorAll('#botWin > div > div > div > div > button > svg')[0].setAttribute('style', 'padding-right: 20px');
+    }, 1000);
 
   }
 
   public ngAfterViewInit(): void {
 
-    window.addEventListener('webchatincomingactivity', this.webChatHandler.bind(this));
+    if(this.treatment != 4 && this.treatment != 5){
+      window.addEventListener('webchatincomingactivity', this.webChatHandler.bind(this));
+      }
+    window.addEventListener('message', this.messageHandler.bind(this));
 
     document.getElementById("overlay").addEventListener("click", function() {
       $(".popup-overlay, .popup-content").removeClass("active");
@@ -217,50 +281,40 @@ const store = window.WebChat.createStore(
       $(".popup-overlay, .popup-content").removeClass("active");
     });
 
+
+    
   }
 
 
 
-  initialize() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
-    this.refreshInterval = setInterval(() => {
-      if (document.hasFocus()) {
-      }
-    }, 1000);
-  }
+
 
   ngAfterContentInit() {
     this.initialize();
-    switch(this.treatment) {
-      case '0':
-        //console.log("Treatment: " + this.treatment)
-        break;
-      case '1':
-        //console.log("Treatment: " + this.treatment)
-        document.getElementById("hallo").style.zIndex = '2';
-        break;
-      case '2':
-        //console.log("Treatment: " + this.treatment)
-        document.getElementById("botWin").style.display = 'none';
-        break;
-    }
   }
 
   navigateLeft() {
-    console.log("backCO")
-    this.drillDownService.post(this.userID, this.task, this.treatment, "Zoom Out", [], {site: "Counties", metric: this.countiesMap.metric, date: this.countiesMap.date, statesSelected: this.countiesMap.selectedState}, 1);
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Zoom Out", [], {site: "Counties", metric: this.countiesMap.metric, date: this.countiesMap.date, statesSelected: this.countiesMap.selectedState}, 0);
 
-    this.router.navigateByUrl('/unitedstates' +  "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID  + '/' + this.treatment + "/" + this.task);
+    this.router.navigateByUrl('/unitedstates' +  "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.countiesMap.userID  + '/' + this.countiesMap.treatment + "/" + this.countiesMap.task);
   }
 
   openInfo() {
+    if(this.treatment == 0 || this.treatment == 1){
+      $("#infoPic").attr("src", "../../assets/images/info.jpg");
+    }
+    else if(this.treatment ==4 || this.treatment == 5){
+      $("#infoPic").attr("src", "../../assets/images/info_Mouse.jpg");
+    }
     $(".popup-overlay, .popup-content").addClass("active");
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Help", null, {site: "UnitedStates", metric: this.countiesMap.metric, date: this.countiesMap.date, statesSelected: this.countiesMap.selectedState}, 0);
+
   }
 
   closeInfo() {
     $(".popup-overlay, .popup-content").removeClass("active");
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Close Help", null, {site: "UnitedStates", metric: this.countiesMap.metric, date: this.countiesMap.date, statesSelected: this.countiesMap.selectedState}, 0);
+
   }
 
   dateChanged(data) {
@@ -276,8 +330,7 @@ const store = window.WebChat.createStore(
   }
 
   public filterDashboard(values) {
-    console.log("filterCO")
-    this.drillDownService.post(this.userID, this.task, this.treatment, "filter", values, {site: "Counties", metric: this.countiesMap.metric, date: this.countiesMap.date, statesSelected: this.countiesMap.selectedState}, 1);
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Filter", values, {site: "Counties", metric: this.countiesMap.metric, date: this.countiesMap.date, statesSelected: this.countiesMap.selectedState}, 1);
 
     //console.log(this.router.url)
     var FilterValues = new Map();
@@ -317,28 +370,27 @@ const store = window.WebChat.createStore(
     this.router.navigateByUrl("/counties/" + this.countiesMap.selectedState + "/" + this.countiesMap.metric + "/" + this.countiesMap.date + '/' + this.userID  + '/' + this.treatment + "/" + this.task);
   }
 
-  public getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-  }
 
   public webChatHandler (event){
     var sheight = document.querySelectorAll("[class$=webchat__basic-transcript__scrollable]")[0].scrollHeight;
-    document.querySelectorAll("[class$=webchat__basic-transcript__scrollable]")[0].scrollTo(0, sheight);
+    document.querySelectorAll("[class$=webchat__basic-transcript__scrollable]")[0].scrollTo({left: 0, top:sheight, behavior: 'auto'});
       if (this.router.url.includes("counties") && (new Date((<any>event).data.timestamp) >= this.currentTime)) {  //
         if((<any>event).data.type == 'event'){
           if((<any>event).data.timestamp != this.componentAction){  
             this.componentAction = (<any>event).data.timestamp;
             //display seed change by adding branch
             if ((<any>event).data.name == "Filter" && (<any>event).data.value != null) {
-                //console.log((<any>event).data.value)
                 this.filterDashboard((<any>event).data.value);
             }
             else if ((<any>event).data.name == "DrillDown" && (<any>event).data.value != null){
-              //console.log((<any>event).data.value)
-              //this.drillDown((<any>event).data.value);
+
               this.filterDashboard((<any>event).data.value);
+          }
+          else if((<any>event).data.name == "Overview"){
+            this.navigateLeft()
+          }
+          else if((<any>event).data.name == "Help"){
+            this.drillDownService.post(this.userID, this.task, this.treatment, "Help", [], {site: "Counties", metric: this.countiesMap.metric, date: this.countiesMap.date, statesSelected: this.countiesMap.selectedState}, 1);
           }
         }
       }
@@ -347,15 +399,41 @@ const store = window.WebChat.createStore(
           this.componentMessage = (<any>event).data.channelData.clientTimestamp;
           if((<any>event).data.channelData.speech != null){
             console.log("speech");
-            //this.drillDownService.postSpeech(1, (<any>event).data.text);
+            this.drillDownService.postSpeech(this.userID, this.task, this.treatment, 1, (<any>event).data.text, "Counties");
           }
           else{
             console.log("nospeech");
+            this.drillDownService.postSpeech(this.userID, this.task, this.treatment, 0, (<any>event).data.text, "Counties");
           }
         }
       }
       }
   
+}
+
+public messageHandler(event) {
+        
+  console.log(event.origin)
+  if ("https://iism-im-survey.iism.kit.edu" != event.origin)
+    return;
+  const { action, value } = event.data
+  if((this.router.url.includes("counties")) && (action == 'end') && (new Date() >= this.currentTime)) {
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Task Ended", value, {site: "Counties", metric: this.countiesMap.metric, date: this.countiesMap.date, statesSelected: this.countiesMap.selectedState}, 0);
+  }
+  else if ((this.router.url.includes("counties")) && (action == 'start') && (sessionStorage.getItem('taskNr') != value) && (new Date() >= this.currentTime)){
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Task Started", value, {site: "Counties", metric: this.countiesMap.metric, date: this.countiesMap.date, statesSelected: this.countiesMap.selectedState}, 0);
+
+    this.countiesMap.task = value
+    sessionStorage.setItem('taskNr', value);
+    this.router.navigate(['unitedstates/Total Cases/2020-12-02/' + this.countiesMap.userID + "/" + this.countiesMap.treatment + "/" + value])
+
+    this.metricSummary.selectedState = [];
+    this.metricSummary.selectedMetric = "Total Cases";
+    this.metricSummary.date = "2020-12-02";
+
+    this.metricSummary.updateSummary();
+    
+  }
 }
 
   

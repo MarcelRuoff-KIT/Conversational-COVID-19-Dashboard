@@ -36,8 +36,8 @@ export class CountiesMapComponent implements OnInit {
   projection;
   path;
 
-  width = 750;
-  height = 500;
+  width = 590;
+  height = 400;
 
 
   centered;
@@ -46,15 +46,15 @@ export class CountiesMapComponent implements OnInit {
     x: 0,
     y: this.height,
     width: 520,
-    height: 75,
+    height: 60,
     roundX: 10,
     roundY: 10
   };
 
   legendBoxSettings = {
-    width: 75,
-    height: 15,
-    y: this.legendContainerSettings.y + 38
+    width: 60,
+    height: 10,
+    y: this.legendContainerSettings.y + 20
   };
 
   zoom;
@@ -211,7 +211,7 @@ export class CountiesMapComponent implements OnInit {
     this.svg = d3.select(this.hostElement).append('svg')
       .attr('width', this.width)
       .attr('height', this.height + 75)
-      .attr("style", 'display: block; margin: auto')
+      .attr("style", 'display: block; margin: auto; position: absolute; left: 10px; top: 100px;')
       .on("click", this.stopped, true);
 
 
@@ -254,7 +254,7 @@ export class CountiesMapComponent implements OnInit {
 
 
     that.covid.forEach(function(item){
-      that.covidSelected.push({"fips": item["fips"], "state": item["State"], "cases": item[that.date]}); //"county": item["County"], ,
+      that.covidSelected.push({"fips": item["fips"], "state": item["State"], "cases": item[that.date]}); 
     })
 
     // Get current date
@@ -343,7 +343,7 @@ export class CountiesMapComponent implements OnInit {
             return that.colorScaleSqrt(metric)
         }
         else if (d.state == that.selectedState){
-          return "#008000";
+          return "#ffffff";
         }
         else{
           return "#f2f2f2";
@@ -353,6 +353,9 @@ export class CountiesMapComponent implements OnInit {
       //  that.clicked(d, that, this);
       //})
       .on('mouseover', function (d) {
+        //that.drillDownService.post(that.userID, that.task, that.treatment, "Tooltip", d.name, {site: "Counties", metric: that.metric, date: that.date, statesSelected: that.selectedState}, 0);
+
+        /*
         that.tooltip.transition()
           .duration(200)
           .style('opacity', .9);
@@ -360,7 +363,8 @@ export class CountiesMapComponent implements OnInit {
         that.tooltip.html(d.name ) //+ '<br/><b>Total ' + that.metric + ':</b> ' + that.formatDecimal(d.metric)
           .style('left', (d3.event.pageX) + 'px')
           .style('top', (d3.event.pageY) + 'px')
-        that.changeDetectorRef.detectChanges();;
+        that.changeDetectorRef.detectChanges();
+        */
       })
       .on('mouseout', function (d) {
         that.tooltip.transition()
@@ -395,7 +399,15 @@ export class CountiesMapComponent implements OnInit {
         .attr("width", that.legendBoxSettings.width)
         .attr("height", that.legendBoxSettings.height)
         .style("fill", function (d, i) {
-              return that.colorScaleSqrt(that.sqrtScale.invert(d))
+          if(d <= 1){
+            return that.colorScaleSqrt(that.sqrtScale.invert(d));
+          }
+          else if(d == 3){
+            return "#1e90ff";
+          }
+          else {
+            return "#ffffff";
+          }
         })
         .style("opacity", 1);
 
@@ -406,20 +418,26 @@ export class CountiesMapComponent implements OnInit {
             that.legendContainerSettings.x + that.legendBoxSettings.width * i + 30
           );
         })
-        .attr("y", that.legendContainerSettings.y + 72)
+        .attr("y", that.legendContainerSettings.y + 50)
         .style("font-size", 12)
         .text(function (d, i) {
-          return that.legendLabels[i];
+          if(d <= 1){
+            return that.legendLabels[i];
+          }
+          else if(d == 3){
+            return "Selected";
+          }
+          else {
+            return "";
+          }
         });
     
-
     legend
       .append("text")
       .attr("x", that.legendContainerSettings.x + 13)
       .attr("y", that.legendContainerSettings.y + 14)
       .style("font-size", 14)
-      .style("font-weight", "bold")
-      .text("COVID-19 " + this.metric + ' by County '); //' by County '
+      .text("COVID-19 " + this.metric + ' by County '); 
 
   }
 
@@ -468,9 +486,8 @@ export class CountiesMapComponent implements OnInit {
 
   valueChange(value: any) {
 
-    this.drillDownService.post(this.userID, this.task, this.treatment, "filter", {Date: formatDate(new Date(this.value), 'yyyy-MM-dd', 'en')}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.selectedState}, 0);
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Filter", {Date: formatDate(new Date(this.value), 'yyyy-MM-dd', 'en')}, {site: "Counties", metric: this.metric, date: this.date, statesSelected: this.selectedState}, 0);
 
-    //console.log("valueChangeCO")
     this.value = value;
     this.date = formatDate(new Date(this.value), 'yyyy-MM-dd', 'en');
     var data = { metric: this.metric, date: this.date}
@@ -482,9 +499,8 @@ export class CountiesMapComponent implements OnInit {
 
   selectedMetricChange(value: any) {
 
-    this.drillDownService.post(this.userID, this.task, this.treatment, "filter", {Metric: value}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.selectedState}, 0);
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Filter", {Metric: value}, {site: "Counties", metric: this.metric, date: this.date, statesSelected: this.selectedState}, 0);
 
-    console.log("selectedMetricChangeCO")
     this.metric = value;
     var data = { metric: this.metric, date: this.date}
     this.location.go('counties/' + this.selectedState + '/' + this.metric + '/' + this.date + '/' + this.userID  + '/' + this.treatment + "/" + this.task);

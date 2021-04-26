@@ -64,11 +64,11 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
   stateScales = [];
 
-  width = 760;
-  height = 500;
+  width = 600;
+  height = 400;
 
 
-  public scaleButtons = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
+  public scaleButtons = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
   public listItems: Array<string> = [
     'Total Cases', 'Total Deaths'
     ]; //'Gesamte Fälle', 'Gesamte Tote'
@@ -79,15 +79,15 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
     x: 0,
     y: this.height,
     width: 520,
-    height: 75,
+    height: 60,
     roundX: 10,
     roundY: 10
   };
 
   legendBoxSettings = {
-    width: 75,
-    height: 15,
-    y: this.legendContainerSettings.y + 38
+    width: 60,
+    height: 10,
+    y: this.legendContainerSettings.y + 20
   };
 
 
@@ -100,7 +100,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
   formatDecimal = d3.format(",.0f");
   legendContainer;
 
-  legendData = [0, 0.2, 0.4, 0.6, 0.8, 1];
+  legendData = [0, 0.2, 0.4, 0.6, 0.8, 1, 2, 3];
 
   states: any[] = [];
   covid: any[] = [];
@@ -219,7 +219,10 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
   }
 
   public ngAfterViewInit(): void {
-    console.log('Site Loaded')
+    parent.postMessage("IframeLoaded", "*")
+    //console.log('Site Loaded')
+    document.querySelector('#map > app-unitedstates-map > div > div > div:nth-child(3) > kendo-label > kendo-multiselect > div').setAttribute('style', 'padding: 0px');
+    
   }
 
   public removeExistingMapFromParent() {
@@ -239,7 +242,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
     this.projection = d3
       .geoAlbersUsa()
-      .scale(1000)
+      .scale(800)
       .translate([this.width / 2, this.height / 2]);
 
     this.zoom = d3
@@ -259,7 +262,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       .append("svg")
       .attr("width", this.width)
       .attr("height", this.height + 75)
-      .attr("style", 'display: block; margin: auto')
+      .attr("style", 'display: block; margin: auto; position: absolute; left: 10px; top: 100px;')
       .on("click", this.stopped, true);
 
     var that = this;
@@ -365,16 +368,17 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
         var metric = d.metric;
         var metric = metric ? metric : 0;
         if(that.statesSelect.includes(d.abbrev)) {
-            return "#ffa500"
+            return "#1e90ff"//"#ffa500"
         }
         else if (metric > 0) {
               return that.colorScaleSqrt(metric);
         } else {
-          return "#008000";  
+          return "#ffffff";  
           //return "#f2f2f2";
         }
       })
       .on("mouseover", function (d) {
+        that.drillDownService.post(that.userID, that.task, that.treatment, "Tooltip", d.name, {site: "UnitedStates", metric: that.metric, date: that.date, statesSelected: that.statesSelect}, 0);
         that.tooltip
           .transition()
           .duration(200)
@@ -408,11 +412,9 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       .attr("height", that.legendContainerSettings.height)
       .attr("id", "legend-container");
 
-    var legend = that.svg
-      .selectAll("g.legend")
+    var legend = that.svg.selectAll("g.legend")
       .data(that.legendData)
-      .enter()
-      .append("g")
+      .enter().append("g")
       .attr("class", "legend")
 
       legend
@@ -426,7 +428,15 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
         .attr("width", that.legendBoxSettings.width)
         .attr("height", that.legendBoxSettings.height)
         .style("fill", function (d, i) {
+            if(d <= 1){
               return that.colorScaleSqrt(that.sqrtScale.invert(d));
+            }
+            else if(d == 3){
+              return "#1e90ff";
+            }
+            else {
+              return "#ffffff";
+            }
         })
         .style("opacity", 1);
 
@@ -437,10 +447,18 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
             that.legendContainerSettings.x + that.legendBoxSettings.width * i + 30
           );
         })
-        .attr("y", that.legendContainerSettings.y + 72)
+        .attr("y", that.legendContainerSettings.y + 50)
         .style("font-size", 12)
         .text(function (d, i) {
+          if(d <= 1){
           return that.legendLabels[i];
+        }
+        else if(d == 3){
+          return "Selected";
+        }
+        else {
+          return "";
+        }
         });
 
     legend
@@ -487,25 +505,9 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
     if (p.active.node() === e) return p.reset(d, p);
     //p.active.classed("active", false);
     p.active = d3.select(e).classed("active", true);
-/*
-    var bounds = p.path.bounds(d),
-      dx = bounds[1][0] - bounds[0][0],
-      dy = bounds[1][1] - bounds[0][1],
-      x = (bounds[0][0] + bounds[1][0]) / 2,
-      y = (bounds[0][1] + bounds[1][1]) / 2,
-      scale = Math.max(
-        1,
-        Math.min(8, 0.9 / Math.max(dx / p.width, dy / p.height))
-      ),
-      translate = [p.width / 2 - scale * x, p.height / 2 - scale * y];
 
-      this.stateScales.push({x: translate[0], y: translate[1], scale: scale, State: d.abbrev})
-
-      console.log(this.stateScales)
-
-
-    */
-   this.drillDownService.post(this.userID, this.task, this.treatment, "drilldown", {Target: d.abbrev}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.statesSelect}, 0);
+    
+   this.drillDownService.post(this.userID, this.task, this.treatment, "Drilldown", {Target: d.abbrev}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.statesSelect}, 0);
 
 
     var stateParameters = this.drillDownService.countiesMapped.find(stateElement => stateElement.State === d.abbrev)
@@ -530,7 +532,6 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
   }
 
   select(state){
-    console.log("drillDownSpeechUS")
     d3.select('path#' + state).dispatch('click');
   }
 
@@ -572,7 +573,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
   selectedStateChange(value: any) {
     
-    this.drillDownService.post(this.userID, this.task, this.treatment, "filter", {State: this.statesSelect}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.statesSelect}, 0);
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Filter", {State: this.statesSelect}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.statesSelect}, 0);
 
     var data = { metric: this.metric, date: this.date, statesSelected: this.statesSelect}
     this.dateChanged.emit(data);
@@ -583,10 +584,9 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
 
   valueChange(e) {
-    this.drillDownService.post(this.userID, this.task, this.treatment, "filter", {Date: formatDate(new Date(this.value), 'yyyy-MM-dd', 'en')}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.statesSelect}, 0);
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Filter", {Date: formatDate(new Date(this.value), 'yyyy-MM-dd', 'en')}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.statesSelect}, 0);
 
 
-    console.log("valueChangedUS")
     this.date = formatDate(new Date(this.value), 'yyyy-MM-dd', 'en');
     var data = { metric: this.metric, date: this.date, statesSelected: this.statesSelect}
     this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID + "/" + this.treatment + "/" + this.task);
@@ -597,10 +597,9 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
   }
 
   selectedMetricChange(value: any) {
-    this.drillDownService.post(this.userID, this.task, this.treatment, "filter", {Metric: value}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.statesSelect}, 0);
+    this.drillDownService.post(this.userID, this.task, this.treatment, "Filter", {Metric: value}, {site: "UnitedStates", metric: this.metric, date: this.date, statesSelected: this.statesSelect}, 0);
 
 
-    console.log("SelectedMetricChangeUS")
     this.metric = value
     var data = { metric: this.metric, date: this.date, statesSelected: this.statesSelect}
     this.dateChanged.emit(data);

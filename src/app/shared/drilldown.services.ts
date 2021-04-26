@@ -12,306 +12,7 @@ export class DrillDownService  {
   public tab;
 
   public countiesMapped = [
-    {
-      "x": -868.4589239659974,
-      "y": -536.0123620913591,
-      "scale": 8,
-      "State": "Washington"
-    },
-    {
-      "x": -491.43069161196763,
-      "y": -615.2136080575572,
-      "scale": 6.068105828821568,
-      "State": "Oregon"
-    },
-    {
-      "x": -21.71886321305749,
-      "y": -450.4210275514805,
-      "scale": 2.958376198359591,
-      "State": "California"
-    },
-    {
-      "x": -307.51435258613424,
-      "y": -687.6225086899302,
-      "scale": 4.130014819015394,
-      "State": "Nevada"
-    },
-    {
-      "x": -481.2145893678613,
-      "y": -330.22821398603696,
-      "scale": 4.209574969229885,
-      "State": "Idaho"
-    },
-    {
-      "x": -1166.4265334404865,
-      "y": -490.13799975931863,
-      "scale": 6.0541794755024725,
-      "State": "Montana"
-    },
-    {
-      "x": -1499.39963281725,
-      "y": -1022.9234971509231,
-      "scale": 6.999849828971005,
-      "State": "Wyoming"
-    },
-    {
-      "x": -884.337320631204,
-      "y": -1046.7456042378087,
-      "scale": 5.761613154691734,
-      "State": "Utah"
-    },
-    {
-      "x": -669.7023195563975,
-      "y": -1279.9139156147303,
-      "scale": 5.114967356328304,
-      "State": "Arizona"
-    },
-    {
-      "x": -1136.3505236246222,
-      "y": -1455.2033950319583,
-      "scale": 5.604326589599097,
-      "State": "New Mexico"
-    },
-    {
-      "x": -1621.166475965683,
-      "y": -1447.4985156850112,
-      "scale": 7.069524355330066,
-      "State": "Colorado"
-    },
-    {
-      "x": -2377.441971247872,
-      "y": -754.5750816836658,
-      "scale": 8,
-      "State": "North Dakota"
-    },
-    {
-      "x": -2367.4742551474524,
-      "y": -1116.5536319338953,
-      "scale": 8,
-      "State": "South Dakota"
-    },
-    {
-      "x": -2225.01191374641,
-      "y": -1312.5718588178486,
-      "scale": 7.483012596085941,
-      "State": "Nebraska"
-    },
-    {
-      "x": -2173.448192212128,
-      "y": -1871.6806437335713,
-      "scale": 7.163643854574927,
-      "State": "Oklahoma"
-    },
-    {
-      "x": -2506.133859759394,
-      "y": -1764.0214507924416,
-      "scale": 8,
-      "State": "Kansas"
-    },
-    {
-      "x": -627.1040986261547,
-      "y": -802.2429494762607,
-      "scale": 2.97447199477294,
-      "State": "Texas"
-    },
-    {
-      "x": -1877.9876257335704,
-      "y": -527.7478385015577,
-      "scale": 5.496269979692641,
-      "State": "Minnesota"
-    },
-    {
-      "x": -2927.3055752760374,
-      "y": -1375.6946352531495,
-      "scale": 8,
-      "State": "Iowa"
-    },
-    {
-      "x": -2601.8632896031195,
-      "y": -1530.587796357272,
-      "scale": 7.006372481199913,
-      "State": "Missouri"
-    },
-    {
-      "x": -3053.8059984560173,
-      "y": -2185.606168192233,
-      "scale": 8,
-      "State": "Arkansas"
-    },
-    {
-      "x": -3144.1120337202883,
-      "y": -2598.918224844432,
-      "scale": 8,
-      "State": "Louisiana"
-    },
-    {
-      "x": -2626.9623126629735,
-      "y": -1935.096892539129,
-      "scale": 6.564130643056938,
-      "State": "Mississippi"
-    },
-    {
-      "x": -3244.704340300331,
-      "y": -1817.8176963531478,
-      "scale": 7.279496500202008,
-      "State": "Tennessee"
-    },
-    {
-      "x": -3617.3571095231528,
-      "y": -1811.3879166199313,
-      "scale": 8,
-      "State": "Kentucky"
-    },
-    {
-      "x": -2234.2048386637257,
-      "y": -1081.4288945101332,
-      "scale": 5.7331517995048795,
-      "State": "Illinois"
-    },
-    {
-      "x": -2855.2776555290934,
-      "y": -939.1857399362075,
-      "scale": 7.2587329184903195,
-      "State": "Wisconsin"
-    },
-    {
-      "x": -2091.6541888878123,
-      "y": -562.3331088209824,
-      "scale": 5.126608165427977,
-      "State": "Michigan"
-    },
-    {
-      "x": -3360.0484412383153,
-      "y": -1502.6916936106413,
-      "scale": 7.634095086473216,
-      "State": "Indiana"
-    },
-    {
-      "x": -3821.6614426148935,
-      "y": -1488.2275622487386,
-      "scale": 8,
-      "State": "Ohio"
-    },
-    {
-      "x": -2876.839584527265,
-      "y": -1917.8955655254413,
-      "scale": 6.565002280887439,
-      "State": "Alabama"
-    },
-    {
-      "x": -2763.7454502820046,
-      "y": -2015.9087442711707,
-      "scale": 5.858284817618313,
-      "State": "Florida"
-    },
-    {
-      "x": -3432.2263831713635,
-      "y": -2061.6287288116196,
-      "scale": 7.139706105804315,
-      "State": "Georgia"
-    },
-    {
-      "x": -4086.076978967003,
-      "y": -2216.180389582726,
-      "scale": 8,
-      "State": "South Carolina"
-    },
-    {
-      "x": -3728.2082440118147,
-      "y": -1771.5943211148167,
-      "scale": 7.26336495317983,
-      "State": "North Carolina"
-    },
-    {
-      "x": -4037.039605158244,
-      "y": -1669.032366161746,
-      "scale": 7.792290971916693,
-      "State": "Virginia"
-    },
-    {
-      "x": -4068.2883904691253,
-      "y": -1625.1093712358968,
-      "scale": 8,
-      "State": "West Virginia"
-    },
-    {
-      "x": -4311.682777610637,
-      "y": -1553.4339481207285,
-      "scale": 8,
-      "State": "Maryland"
-    },
-    {
-      "x": -4236.959236280902,
-      "y": -1361.0168584241837,
-      "scale": 8,
-      "State": "Pennsylvania"
-    },
-    {
-      "x": -4465.859334905241,
-      "y": -1513.2809391659457,
-      "scale": 8,
-      "State": "Delaware"
-    },
-    {
-      "x": -4499.463815190882,
-      "y": -1383.534425252104,
-      "scale": 8,
-      "State": "New Jersey"
-    },
-    {
-      "x": -3894.2399377100082,
-      "y": -946.5589241097716,
-      "scale": 7.208116938393932,
-      "State": "New York"
-    },
-    {
-      "x": -4625.193857594659,
-      "y": -1198.4859560718132,
-      "scale": 8,
-      "State": "Connecticut"
-    },
-    {
-      "x": -4719.28645800684,
-      "y": -1158.03513348357,
-      "scale": 8,
-      "State": "Rhode Island"
-    },
-    {
-      "x": -4692.497679558311,
-      "y": -1088.2870019077313,
-      "scale": 8,
-      "State": "Massachusetts"
-    },
-    {
-      "x": -4668.066825716087,
-      "y": -906.2485314601263,
-      "scale": 8,
-      "State": "New Hampshire"
-    },
-    {
-      "x": -4556.882506412917,
-      "y": -933.2665278905051,
-      "scale": 8,
-      "State": "Vermont"
-    },
-    {
-      "x": -4151.058038805579,
-      "y": -605.818127629716,
-      "scale": 6.985487171819148,
-      "State": "Maine"
-    },
-    {
-      "x": -1635.4832916943124,
-      "y": -3031.616493818463,
-      "scale": 8,
-      "State": "Hawaii"
-    },
-    {
-      "x": -154.5332641430432,
-      "y": -1423.4258900124978,
-      "scale": 4.278604660744669,
-      "State": "Alaska"
-    }
+    {x: -205.73618706867472, y: -120.8440413577797, scale: 6.649404482685333, State: "Washington"}, {x: -8.785780244993873, y: -249.4466532931831, scale: 4.854484663057255, State: "Oregon"}, {x: 167.96098612456785, y: -242.00177410680072, scale: 2.3667009586876726, State: "California"}, {x: 14.309466348077763, y: -384.8974141913285, scale: 3.304011855212316, State: "Nevada"}, {x: -212.40394484010665, y: -819.3324382386521, scale: 4.091973885062643, State: "Arizona"}, {x: -342.72661460469226, y: -606.9319572025778, scale: 4.609290523753388, State: "Utah"}, {x: -119.55887346357639, y: -95.79957241963422, scale: 3.3676599753839076, State: "Idaho"}, {x: -538.4938226844387, y: -145.33870472436456, scale: 4.7796153753966895, State: "Montana"}, {x: -755.5293171996555, y: -538.3448045618981, scale: 5.5998798631768025, State: "Wyoming"}, {x: -848.4836220314221, y: -875.2178383348062, scale: 5.655619484264053, State: "Colorado"}, {x: -554.4035171653554, y: -939.9896524416026, scale: 4.483461271679277, State: "New Mexico"}, {x: 148.227717407787, y: -952.2334134015246, scale: 3.3778457847984233, State: "Alaska"}, {x: -1055.2284679791185, y: -2639.182947406429, scale: 7.882195159548647, State: "Hawaii"}, {x: -315.3170712354557, y: -522.8154797900911, scale: 2.3795775958183523, State: "Texas"}, {x: -1263.439487246948, y: -1192.2356192143354, scale: 5.655508306243363, State: "Oklahoma"}, {x: -1549.407083753378, y: -1128.9424810795547, scale: 6.58698795075904, State: "Kansas"}, {x: -1283.9770310996325, y: -738.2272860633302, scale: 5.907641523225743, State: "Nebraska"}, {x: -1534.4480449493387, y: -641.3352695099757, scale: 6.963588913957059, State: "South Dakota"}, {x: -1666.282182752111, y: -361.4157211354035, scale: 7.428896600527183, State: "North Dakota"}, {x: -1154.6288218865272, y: -202.3474716135405, scale: 4.3970159837541125, State: "Minnesota"}, {x: -1823.6632176398944, y: -460.9992752093533, scale: 5.806986334792256, State: "Wisconsin"}, {x: -1349.220428522859, y: -244.80216043966675, scale: 4.101286532342382, State: "Michigan"}, {x: -2367.3055752760374, y: -1025.6946352531495, scale: 8, State: "Iowa"}, {x: -1637.082792885701, y: -944.2153378378212, scale: 5.605097984959929, State: "Missouri"}, {x: -1424.4421557626683, y: -635.8170436279114, scale: 4.586521439603904, State: "Illinois"}, {x: -2178.5865600204147, y: -1605.932871775726, scale: 7.097376299972705, State: "Arkansas"}, {x: -2079.8835407843367, y: -1820.7745426990905, scale: 6.60136225766366, State: "Louisiana"}, {x: -1685.4654889747344, y: -1285.5122883090255, scale: 5.2513045144455495, State: "Mississippi"}, {x: -2101.851016013818, y: -1145.139108955037, scale: 5.74697092121211, State: "Tennessee"}, {x: -2527.334590796427, y: -1199.106312541743, scale: 6.737048216352523, State: "Kentucky"}, {x: -2734.918143644584, y: -940.3136357654926, scale: 6.816859361941855, State: "Ohio"}, {x: -2203.456667456366, y: -896.7895514295842, scale: 6.107276069178573, State: "Indiana"}, {x: -3143.945766600755, y: -1133.9842347693534, scale: 7.234632283037812, State: "West Virginia"}, {x: -3676.9592362809017, y: -1011.0168584241837, scale: 8, State: "Pennsylvania"}, {x: -2658.0724661107947, y: -468.92246175206003, scale: 5.766493550715145, State: "New York"}, {x: -3996.882506412917, y: -583.2665278905051, scale: 8, State: "Vermont"}, {x: -4108.066825716087, y: -556.2485314601263, scale: 8, State: "New Hampshire"}, {x: -2877.775252048038, y: -205.23501523100686, scale: 5.588389737455319, State: "Maine"}, {x: -4132.497679558311, y: -738.2870019077313, scale: 8, State: "Massachusetts"}, {x: -4159.28645800684, y: -808.03513348357, scale: 8, State: "Rhode Island"}, {x: -4065.1938575946588, y: -848.4859560718132, scale: 8, State: "Connecticut"}, {x: -3939.463815190882, y: -1033.534425252104, scale: 8, State: "New Jersey"}, {x: -3905.8593349052408, y: -1163.2809391659457, scale: 8, State: "Delaware"}, {x: -3751.682777610636, y: -1203.4339481207285, scale: 8, State: "Maryland"}, {x: -2694.9918374249273, y: -1007.4351191309825, scale: 6.151808662039494, State: "Virginia"}, {x: -2484.583458755866, y: -1109.283742201968, scale: 5.734235489352502, State: "North Carolina"}, {x: -3526.076978967004, y: -1866.180389582726, scale: 8, State: "South Carolina"}, {x: -2292.8399157656145, y: -1363.7147388171231, scale: 5.7117648846434514, State: "Georgia"}, {x: -1885.311521645016, y: -1271.7163611848555, scale: 5.252001824709952, State: "Alabama"}, {x: -1840.0661318980315, y: -1378.395602712204, scale: 4.68662785409465, State: "Florida"}
   ]
   
   
@@ -322,26 +23,12 @@ export class DrillDownService  {
 
   }
 
-  public get() {
-    this.http.get<any>('http://interactive-analytics.org:8080/interactions').subscribe({
-        next: data => {
-            console.log(data);
-        },
-        error: error => {
-            console.log(error.message);
-            console.error('There was an error!', error);
-        }
-    })
-  }
-
   public post(limeID, task, treatment, interactionType, parameters, state, nl){
-    var conversationID = sessionStorage.getItem('conversationID')
-    //console.log(conversationID)
+
     var datetime = new Date().toISOString().slice(0, 23).replace('T', ' ');
-    console.log({ sessionID: conversationID, limeID: limeID, task: task, treatment: treatment, interaction: interactionType , parameters: JSON.stringify(parameters), state: JSON.stringify(state),  date: datetime, naturalLanguage: nl })
-    //console.log(datetime);
-    /*
-      this.http.post<any>('http://interactive-analytics.org:8080/interactions', { sessionID: conversationID, limeID: limeID, task: task, treatment: treatment, interaction: interactionType , parameters: JSON.stringify(parameters), state: JSON.stringify(state),  date: datetime, naturalLanguage: nl }).subscribe({
+
+    console.log({ limeID: limeID, task: task, treatment: treatment, interaction: interactionType , parameters: JSON.stringify(parameters), state: JSON.stringify(state),  date: datetime, naturalLanguage: nl })
+      this.http.post<any>('https://interactive-analytics.org:8443/interactions', { limeID: limeID, task: task, treatment: treatment, interaction: interactionType , parameters: JSON.stringify(parameters), state: JSON.stringify(state),  date: datetime, naturalLanguage: nl }).subscribe({
           next: data => {
               console.log(data);
           },
@@ -350,16 +37,13 @@ export class DrillDownService  {
               console.error('There was an error!', error);
           }
       })
-      */
+      
   }
 
-  public postSpeech(limeID, task, treatment, speech, text){
-    var conversationID = sessionStorage.getItem('conversationID')
-    //console.log(conversationID)
+  public postSpeech(limeID, task, treatment, speech, text, state){
     var datetime = new Date().toISOString().slice(0, 23).replace('T', ' ');
-    //console.log(datetime);
-    /*
-      this.http.post<any>('http://interactive-analytics.org:8080/speech', {sessionID: conversationID, limeID: limeID, task: task, treatment: treatment, text: text, speech: speech, date: datetime}).subscribe({
+
+      this.http.post<any>('https://interactive-analytics.org:8443/speech', {limeID: limeID, task: task, treatment: treatment, text: text, speech: speech, state: state, date: datetime}).subscribe({
           next: data => {
               console.log(data);
           },
@@ -368,7 +52,6 @@ export class DrillDownService  {
               console.error('There was an error!', error);
           }
       })
-      */
   }
 
 }

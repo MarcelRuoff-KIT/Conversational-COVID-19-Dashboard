@@ -1,8 +1,9 @@
 <div class="container">
   <div class="row">
     <div class="col">
-      <kendo-label text="Date:"><br>
+      <kendo-label text="Date: ">({{date}})<br>
       <kendo-slider #slider [tickPlacement]="tickPlacement"
+                    [style.width]="'95%'"
                     [min]="min"
                     [max]="max"
                     [smallStep]="smallStep"
@@ -14,6 +15,7 @@
       <p style="margin:0">&nbsp; </p>
       <kendo-combobox 
           [data]="listItems" 
+          [style.width]="'80%'"
           (valueChange)="selectedMetricChange($event)"
           [clearButton] = "false"
           [(ngModel)]="metric"
@@ -23,6 +25,7 @@
     <div class="col"   >
       <kendo-label text="States:"><br>
         <kendo-multiselect #scaleDropDown 
+        [style.z-index]="'3'"
           [filterable] = "true"
           [data]="scaleButtons" 
           [tagMapper]="tagMapper"
@@ -31,8 +34,8 @@
         [placeholder]="'Select States...'"
         (valueChange)="selectedStateChange($event)"
         [(ngModel)]="statesSelect"
-        [popupSettings]="{ height: 66 }"
-        listHeight="66">
+        [popupSettings]="{ height: 100 }"
+        listHeight="100">
       <ng-template kendoMultiSelectGroupTagTemplate let-dataItems>
           <span class="k-icon k-i-arrow-s"></span>
           {{ dataItems.length }} State(s) selected

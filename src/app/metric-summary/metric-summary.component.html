@@ -2,12 +2,12 @@
         <div class="card">
           <div class="card-body">
             <div class="row">
-              <div class="col-12 col-lg-6 col-xl pb-4 active-issues">
+              <div style="width: 100%;"> <!--class="col-12 col-lg-6 col-xl pb-4 active-issues"-->
                 <span class="comp-label">
                   <strong>{{cases | number:'1.0':'en-US' }} </strong>
                   <small>{{selectedMetric}} as of {{date}} </small>
                 </span>
-                <kendo-chart [transitions]="false" style="height: 160px;">
+                <kendo-chart [transitions]="false" style="height: 100px;">
                   <kendo-chart-series-defaults type="area"
                                                [overlay]="false"></kendo-chart-series-defaults>
                   <kendo-chart-series>

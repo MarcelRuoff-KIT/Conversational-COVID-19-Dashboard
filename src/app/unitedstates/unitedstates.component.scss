@@ -10,7 +10,7 @@
 }
 
 .webchat-container {
-  height: 300px;
+  height: 285px;
   width: 100%;
   overflow: hidden;
 }
@@ -22,7 +22,8 @@
   position: relative;
   justify-content: flex-end;
   border: 1px solid #122e51;
-  z-index: 3;
+  padding-right: 10px;
+  z-index: 101;
 }
 
 .mouseBlock {
@@ -137,7 +138,7 @@
   height: 100%;
   width: 100%;
   top: 0px;
-  z-index: 4;
+  z-index: 200;
 }
 
 .popup-overlay.active {
